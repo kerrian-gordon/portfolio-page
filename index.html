@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kerrian Gordon — AI Practitioner</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #080c14;
+      --card: rgba(255,255,255,0.03);
+      --border: rgba(255,255,255,0.08);
+      --text: #f1f5f9;
+      --muted: #64748b;
+      --cyan: #38bdf8;
+      --indigo: #818cf8;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      line-height: 1.6;
+    }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 99px; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes shimmer { 0%,100% { opacity: 0.6; } 50% { opacity: 1; } }
+    .fade-up { animation: fadeUp 0.5s ease both; }
+    .gradient-text {
+      background: linear-gradient(135deg, var(--cyan), var(--indigo));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .container { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+    /* Header */
+    header {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(8,12,20,0.95);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+    .header-inner {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 0; gap: 20px; flex-wrap: wrap;
+    }
+    .brand h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.5rem; font-weight: 400; letter-spacing: -0.02em;
+    }
+    .brand p { font-size: 0.8rem; color: var(--muted); max-width: 420px; margin-top: 4px; }
+    .header-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .contact-pill {
+      display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+      font-size: 0.78rem; color: var(--muted);
+    }
+    .contact-pill a { color: #94a3b8; text-decoration: none; transition: color 0.2s; }
+    .contact-pill a:hover { color: var(--cyan); }
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: linear-gradient(135deg, var(--cyan), var(--indigo));
+      color: #fff; border: none; border-radius: 8px;
+      padding: 10px 20px; font-size: 0.82rem; font-weight: 700;
+      text-decoration: none; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
+      white-space: nowrap;
+    }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(56,189,248,0.25); }
+    .btn-ghost {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+      color: #94a3b8; border-radius: 8px; padding: 9px 16px;
+      font-size: 0.78rem; font-weight: 600; text-decoration: none; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-ghost:hover { border-color: rgba(56,189,248,0.4); color: var(--cyan); }
+    /* Hero strip */
+    .hero {
+      padding: 56px 0 40px;
+      background: radial-gradient(ellipse 80% 60% at 50% -20%, rgba(56,189,248,0.12), transparent);
+    }
+    .hero-tag {
+      display: inline-block; font-size: 0.68rem; font-weight: 700;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--cyan); margin-bottom: 16px;
+      padding: 4px 12px; border-radius: 99px;
+      background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2);
+    }
+    .hero h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(2rem, 5vw, 2.75rem);
+      font-weight: 400; line-height: 1.15; margin-bottom: 16px;
+    }
+    .hero-sub { font-size: 1rem; color: #94a3b8; max-width: 560px; }
+    /* Sections */
+    section { padding: 48px 0; }
+    section + section { border-top: 1px solid rgba(255,255,255,0.05); }
+    .section-label {
+      font-size: 0.68rem; font-weight: 700; letter-spacing: 0.14em;
+      text-transform: uppercase; color: var(--muted); margin-bottom: 8px;
+    }
+    .section-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.6rem; margin-bottom: 28px;
+    }
+    /* Project card */
+    .project-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 16px; overflow: hidden;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    .project-card:hover {
+      border-color: rgba(56,189,248,0.3);
+      box-shadow: 0 0 40px rgba(56,189,248,0.06);
+    }
+    .project-preview {
+      position: relative; height: 220px; cursor: pointer;
+      background: linear-gradient(160deg, #0c1424 0%, #080c14 100%);
+      border-bottom: 1px solid var(--border);
+      overflow: hidden;
+    }
+    .project-preview::before {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(56,189,248,0.08), rgba(129,140,248,0.08));
+    }
+    .preview-mock {
+      position: absolute; inset: 20px 24px 0;
+      background: #0f1623; border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px 10px 0 0; padding: 14px 16px;
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .mock-bar { display: flex; align-items: center; gap: 10px; }
+    .mock-logo {
+      width: 28px; height: 28px; border-radius: 6px;
+      background: linear-gradient(135deg, var(--cyan), var(--indigo));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 900; color: #fff;
+    }
+    .mock-title { font-size: 11px; font-weight: 700; }
+    .mock-stats { display: flex; gap: 8px; flex-wrap: wrap; }
+    .mock-stat {
+      flex: 1; min-width: 70px; background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 8px 10px;
+    }
+    .mock-stat-label { font-size: 8px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+    .mock-stat-val { font-family: 'DM Serif Display', serif; font-size: 16px; color: var(--cyan); margin-top: 2px; }
+    .preview-overlay {
+      position: absolute; inset: 0; display: flex;
+      align-items: center; justify-content: center;
+      background: rgba(8,12,20,0.55); opacity: 0; transition: opacity 0.25s;
+    }
+    .project-preview:hover .preview-overlay { opacity: 1; }
+    .preview-cta {
+      background: linear-gradient(135deg, var(--cyan), var(--indigo));
+      color: #fff; padding: 12px 24px; border-radius: 8px;
+      font-size: 0.82rem; font-weight: 700; border: none; cursor: pointer;
+    }
+    .project-body { padding: 24px 28px; }
+    .project-name { font-size: 1.1rem; font-weight: 700; margin-bottom: 6px; }
+    .project-caption { font-size: 0.88rem; color: #94a3b8; margin-bottom: 18px; }
+    .project-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+    /* Value props */
+    .value-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-top: 24px; }
+    .value-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 20px 22px;
+    }
+    .value-card h3 { font-size: 0.85rem; font-weight: 700; color: var(--cyan); margin-bottom: 8px; }
+    .value-card p { font-size: 0.84rem; color: #94a3b8; }
+    /* Skills */
+    .skills-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    @media (max-width: 640px) { .skills-grid { grid-template-columns: 1fr; } }
+    .skill-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 14px; padding: 24px;
+    }
+    .skill-card h3 { font-size: 0.9rem; font-weight: 700; margin-bottom: 14px; color: #cbd5e1; }
+    .tags { display: flex; flex-wrap: wrap; gap: 8px; }
+    .tag {
+      font-size: 0.72rem; font-weight: 600; padding: 5px 12px;
+      border-radius: 99px; background: rgba(56,189,248,0.08);
+      border: 1px solid rgba(56,189,248,0.2); color: var(--cyan);
+    }
+    .tag.sector {
+      background: rgba(167,139,250,0.08);
+      border-color: rgba(167,139,250,0.25); color: #a78bfa;
+    }
+    .trait-row {
+      display: flex; gap: 12px; flex-wrap: wrap; margin-top: 20px;
+    }
+    .trait {
+      font-size: 0.78rem; font-weight: 700; letter-spacing: 0.04em;
+      padding: 6px 14px; border-radius: 8px;
+      background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+      color: #e2e8f0;
+    }
+    /* About */
+    .about-text { font-size: 0.92rem; color: #94a3b8; max-width: 680px; }
+    .about-text p + p { margin-top: 14px; }
+    .credential {
+      display: inline-flex; align-items: center; gap: 8px;
+      margin-top: 18px; font-size: 0.8rem; color: var(--muted);
+      padding: 8px 14px; border-radius: 8px;
+      background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+    }
+    /* Contact */
+    .contact-card {
+      background: linear-gradient(135deg, rgba(56,189,248,0.06), rgba(129,140,248,0.06));
+      border: 1px solid rgba(56,189,248,0.2);
+      border-radius: 16px; padding: 36px 32px; text-align: center;
+    }
+    .contact-card h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.75rem; margin-bottom: 8px;
+    }
+    .contact-card p { color: var(--muted); font-size: 0.9rem; margin-bottom: 24px; }
+    .contact-links { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; }
+    .contact-link {
+      display: flex; align-items: center; gap: 8px;
+      padding: 12px 22px; border-radius: 10px;
+      background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+      color: var(--text); text-decoration: none; font-size: 0.88rem; font-weight: 600;
+      transition: all 0.2s;
+    }
+    .contact-link:hover { border-color: rgba(56,189,248,0.4); color: var(--cyan); }
+    footer {
+      padding: 28px 0; text-align: center;
+      font-size: 0.75rem; color: #475569;
+      border-top: 1px solid rgba(255,255,255,0.05);
+    }
+    /* Nav */
+    nav { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 20px; }
+    nav a {
+      font-size: 0.75rem; font-weight: 600; color: var(--muted);
+      text-decoration: none; padding: 6px 12px; border-radius: 6px;
+      transition: color 0.2s, background 0.2s;
+    }
+    nav a:hover { color: var(--cyan); background: rgba(56,189,248,0.06); }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="container header-inner">
+    <div class="brand">
+      <h1>Kerrian Gordon</h1>
+      <p>Aspiring AI Practitioner — ready to change the world one build at a time by efficiently applying AI tools to business-related problems.</p>
+    </div>
+    <div class="header-actions">
+      <div class="contact-pill">
+        <a href="tel:+16464153202">(646) 415-3202</a>
+        <span>·</span>
+        <a href="mailto:kerrianvgordon@gmail.com">kerrianvgordon@gmail.com</a>
+      </div>
+      <a href="#contact" class="btn-primary">Let's change the world together →</a>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="hero">
+    <div class="container fade-up">
+      <span class="hero-tag">Portfolio</span>
+      <h2>I build <span class="gradient-text">AI tools</span> that solve real business problems.</h2>
+      <p class="hero-sub">Political science background. Cross-sector experience. Tenacious about turning complexity into working products.</p>
+      <nav>
+        <a href="#projects">Projects</a>
+        <a href="#about">About</a>
+        <a href="#skills">Skills</a>
+        <a href="#contact">Contact</a>
+      </nav>
+    </div>
+  </div>
+
+  <!-- Projects -->
+  <section id="projects">
+    <div class="container">
+      <div class="section-label">Featured Work</div>
+      <h2 class="section-title">Projects</h2>
+      <article class="project-card fade-up">
+        <div class="project-preview" id="project-preview" role="button" tabindex="0" aria-label="Open NYC 3K Optimizer live preview">
+          <div class="preview-mock">
+            <div class="mock-bar">
+              <div class="mock-logo">3</div>
+              <div>
+                <div class="mock-title">NYC 3K Optimizer</div>
+                <div style="font-size:9px;color:#475569;letter-spacing:0.06em;text-transform:uppercase">Seat Management Platform</div>
+              </div>
+            </div>
+            <div class="mock-stats">
+              <div class="mock-stat"><div class="mock-stat-label">3K Seats</div><div class="mock-stat-val">748</div></div>
+              <div class="mock-stat"><div class="mock-stat-label">Waitlisted</div><div class="mock-stat-val" style="color:#f97316">161</div></div>
+              <div class="mock-stat"><div class="mock-stat-label">Live Vac.</div><div class="mock-stat-val" style="animation:shimmer 2s infinite">●</div></div>
+            </div>
+          </div>
+          <div class="preview-overlay">
+            <button class="preview-cta" id="live-preview-btn">▶ Live Preview</button>
+          </div>
+        </div>
+        <div class="project-body">
+          <div class="project-name">NYC 3K Optimizer</div>
+          <p class="project-caption">AI-built tool helping 3,000 NYC families complete mid-year 3K transfers efficiently.</p>
+          <div class="project-actions">
+            <a href="projects/nyc-3k-optimizer.html" target="_blank" rel="noopener" class="btn-primary">▶ Live Preview</a>
+            <a href="projects/nyc-3k-optimizer-source.html" target="_blank" rel="noopener" class="btn-ghost">{ } View Code</a>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- About -->
+  <section id="about">
+    <div class="container">
+      <div class="section-label">Background</div>
+      <h2 class="section-title">About Me</h2>
+      <div class="about-text fade-up">
+        <p>I hold a BA in Political Science and I'm building a career where AI meets operations that matter. I've worked in banking, social work, healthcare, and retail—sectors where precision, empathy, and accountability aren't optional.</p>
+        <p>I'm driven, intelligent, and tenacious. When systems fail the people they're meant to serve, I don't wait for permission—I prototype the fix.</p>
+        <div class="credential">🎓 BA, Political Science</div>
+      </div>
+      <div class="value-grid fade-up">
+        <div class="value-card">
+          <h3>Innovative Mindset</h3>
+          <p>I find smarter solutions and more effective improvements—not by adding complexity, but by asking better questions.</p>
+        </div>
+        <div class="value-card">
+          <h3>Reliable Performance</h3>
+          <p>Consistent delivery under pressure makes me a valued, dependable asset on any team I join.</p>
+        </div>
+        <div class="value-card">
+          <h3>Strategic Thinking</h3>
+          <p>Particularly suited to roles requiring strategic analysis, stakeholder alignment, and long-term planning.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Skills -->
+  <section id="skills">
+    <div class="container">
+      <div class="section-label">Capabilities</div>
+      <h2 class="section-title">Skills &amp; Experience</h2>
+      <div class="skills-grid fade-up">
+        <div class="skill-card">
+          <h3>AI &amp; Product</h3>
+          <div class="tags">
+            <span class="tag">AI Tools &amp; Ecosystem</span>
+            <span class="tag">Responsible Building</span>
+            <span class="tag">AI Product Lifecycles</span>
+            <span class="tag">Problem Solving</span>
+            <span class="tag">Critical Thinking &amp; Ethics</span>
+            <span class="tag">Stakeholder Management</span>
+          </div>
+        </div>
+        <div class="skill-card">
+          <h3>Cross-Sector Experience</h3>
+          <div class="tags">
+            <span class="tag sector">Banking</span>
+            <span class="tag sector">Social Work</span>
+            <span class="tag sector">Healthcare</span>
+            <span class="tag sector">Retail</span>
+          </div>
+          <p style="font-size:0.82rem;color:#64748b;margin-top:14px">Real-world context across regulated, human-centered, and fast-paced environments.</p>
+        </div>
+      </div>
+      <div class="trait-row fade-up">
+        <span class="trait">Driven</span>
+        <span class="trait">Intelligent</span>
+        <span class="trait">Tenacious</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact -->
+  <section id="contact">
+    <div class="container">
+      <div class="contact-card fade-up">
+        <h2>Let's change the world together.</h2>
+        <p>Ready to talk about how I can contribute to your team. Reach out directly—I respond promptly.</p>
+        <div class="contact-links">
+          <a href="mailto:kerrianvgordon@gmail.com" class="contact-link">✉ kerrianvgordon@gmail.com</a>
+          <a href="tel:+16464153202" class="contact-link">📞 (646) 415-3202</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">© 2026 Kerrian Gordon</div>
+</footer>
+
+<script>
+  const previewUrl = 'projects/nyc-3k-optimizer.html';
+  const openPreview = () => window.open(previewUrl, '_blank', 'noopener');
+  document.getElementById('project-preview').addEventListener('click', openPreview);
+  document.getElementById('project-preview').addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openPreview(); }
+  });
+  document.getElementById('live-preview-btn').addEventListener('click', e => {
+    e.stopPropagation();
+    openPreview();
+  });
+</script>
+</body>
+</html>

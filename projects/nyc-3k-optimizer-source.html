@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NYC 3K Optimizer — Source Code</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #080c14;
+      --card: rgba(255,255,255,0.03);
+      --border: rgba(255,255,255,0.08);
+      --text: #f1f5f9;
+      --muted: #64748b;
+      --cyan: #38bdf8;
+      --indigo: #818cf8;
+    }
+    html, body { height: 100%; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: rgba(255,255,255,0.03); }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 99px; }
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(8,12,20,0.97);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .header-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .header-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 20px;
+      font-weight: 400;
+      background: linear-gradient(135deg, var(--cyan), var(--indigo));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .btn-ghost {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+    .btn-ghost:hover {
+      background: rgba(255,255,255,0.08);
+      color: var(--text);
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--cyan), var(--indigo));
+      color: #fff;
+      border: none;
+    }
+    .btn-primary:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+    .btn-copy {
+      background: rgba(56,189,248,0.12);
+      border: 1px solid rgba(56,189,248,0.3);
+      color: var(--cyan);
+    }
+    .btn-copy:hover {
+      background: rgba(56,189,248,0.2);
+    }
+    .btn-copy.copied {
+      background: rgba(34,197,94,0.15);
+      border-color: rgba(34,197,94,0.3);
+      color: #22c55e;
+    }
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      max-width: 1280px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 24px;
+      overflow: hidden;
+    }
+    .code-container {
+      flex: 1;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: auto;
+      position: relative;
+    }
+    pre {
+      margin: 0;
+      padding: 24px;
+      font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace;
+      font-size: 12px;
+      line-height: 1.6;
+      color: #cbd5e1;
+      white-space: pre;
+      tab-size: 2;
+    }
+    code {
+      font-family: inherit;
+    }
+    .meta {
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 12px;
+      letter-spacing: 0.04em;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <div class="header-title">NYC 3K Optimizer — Source Code</div>
+      <div class="header-actions">
+        <a href="../index.html" class="btn btn-ghost">← Portfolio</a>
+        <a href="nyc-3k-optimizer.html" class="btn btn-primary">▶ Live Preview</a>
+        <button id="copyBtn" class="btn btn-copy" onclick="copyCode()">Copy Code</button>
+      </div>
+    </div>
+  </header>
+  <main>
+    <div class="meta">800 lines · single-file React app</div>
+    <div class="code-container">
+      <pre><code id="sourceCode">&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;UTF-8&quot; /&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+&lt;title&gt;NYC 3K Optimizer — SY 2025–26&lt;/title&gt;
+&lt;link href=&quot;https://fonts.googleapis.com/css2?family=DM+Serif+Display&amp;family=DM+Sans:wght@300;400;500;600;700&amp;display=swap&quot; rel=&quot;stylesheet&quot; /&gt;
+&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js&quot;&gt;&lt;/script&gt;
+&lt;style&gt;
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #080c14; color: #f1f5f9; font-family: &#x27;DM Sans&#x27;, sans-serif; }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: rgba(255,255,255,0.03); }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 99px; }
+  select option { background: #0f1623; color: #f1f5f9; }
+  @keyframes pulse    { 0%,100%{opacity:1} 50%{opacity:0.35} }
+  @keyframes vacPulse { 0%{box-shadow:0 0 0 0 rgba(56,189,248,0.45)} 70%{box-shadow:0 0 0 10px rgba(56,189,248,0)} 100%{box-shadow:0 0 0 0 rgba(56,189,248,0)} }
+  @keyframes bellRing { 0%,100%{transform:rotate(0deg)} 25%{transform:rotate(-15deg)} 75%{transform:rotate(15deg)} }
+  @keyframes slideIn  { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:translateY(0)} }
+  .pulse-dot  { animation: pulse 1.5s infinite; }
+  .bell-ring  { animation: bellRing 0.5s ease; }
+  .slide-in   { animation: slideIn 0.25s ease; }
+  .tab-content { animation: slideIn 0.2s ease; }
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;div id=&quot;root&quot;&gt;&lt;/div&gt;
+&lt;script type=&quot;text/babel&quot;&gt;
+const { useState, useEffect, useRef } = React;
+
+// ── Data ─────────────────────────────────────────────────────────────────────
+const BOROUGHS = [&quot;Manhattan&quot;,&quot;Brooklyn&quot;,&quot;Queens&quot;,&quot;Bronx&quot;,&quot;Staten Island&quot;];
+
+const INITIAL_SCHOOLS = [
+  {id:1,  name:&quot;PS 58 The Carroll School&quot;,        borough:&quot;Brooklyn&quot;,     district:15, capacity:40, enrolled:38, waitlist:14, hasProgram:true,  programType:&quot;Full-Day&quot;,  income:&quot;low&quot;,   score:87},
+  {id:2,  name:&quot;PS 321 William Penn&quot;,              borough:&quot;Brooklyn&quot;,     district:15, capacity:36, enrolled:36, waitlist:22, hasProgram:true,  programType:&quot;Half-Day&quot;,  income:&quot;mixed&quot;, score:91},
+  {id:3,  name:&quot;PS 261 Philip Livingston&quot;,         borough:&quot;Brooklyn&quot;,     district:15, capacity:32, enrolled:28, waitlist:6,  hasProgram:true,  programType:&quot;Full-Day&quot;,  income:&quot;mixed&quot;, score:74},
+  {id:4,  name:&quot;PS 107 John W. Kimball&quot;,           borough:&quot;Brooklyn&quot;,     district:15, capacity:40, enrolled:32, waitlist:0,  hasProgram:false, programType:null,        income:&quot;mixed&quot;, score:62},
+  {id:5,  name:&quot;PS 10 Magnet School&quot;,              borough:&quot;Brooklyn&quot;,     district:20, capacity:44, enrolled:44, waitlist:31, hasProgram:true,  programType:&quot;Full-Day&quot;,  income:&quot;low&quot;,   score:95},
+  {id:6,  name:&quot;PS 503 The School of Discovery&quot;,   borough:&quot;Brooklyn&quot;,     district:20, capacity:36, enrolled:30, waitlist:4,  hasProgram:true,  programType:&quot;Half-Day&quot;,  income:&quot;mixed&quot;, score:69},
+  {id:7,  name:&quot;PS 230 Doris L. Cohen&quot;,            borough:&quot;Brooklyn&quot;,     district:20, capacity:32, enrolled:18, waitlist:0,  hasProgram:false, programType:null,        income:&quot;mixed&quot;, score:55},
+  {id:8,  name:&quot;PS 9 Teunis G. Bergen&quot;,            borough:&quot;Brooklyn&quot;,     district:21, capacity:40, enrolled:40, waitlist:18, hasProgram:true,  programType:&quot;Full-Day&quot;,  income:&quot;low&quot;,   score:88},
+  {id:9,  name:&quot;PS 253 Magnet School of Math&quot;,     borough:&quot;Queens&quot;,       district:27, capacity:36, enrolled:34, waitlist:11, hasProgram:true,  programType:&quot;Full-Day&quot;,  income:&quot;low&quot;,   score:82},
+  {id:10, name:&quot;PS 147 Isaac Remsen&quot;,              borough:&quot;Queens&quot;,       district:27, capacity:32, enrolled:20, waitlist:0,  hasProgram:false, programType:null,        income:&quot;mixed&quot;, score:58},
+  {id:11, name:&quot;PS 64 Joseph P. Addabbo&quot;,          borough:&quot;Queens&quot;,       district:27, capacity:40, enrolled:38, waitlist:9,  hasProgram:true,  programType:&quot;Half-Day&quot;,  income:&quot;low&quot;,   score:79},
+  {id:12, name:&quot;PS 146 Howard Beach&quot;,              borough:&quot;Queens&quot;,       district:27, capacity:28, enrolled:14, waitlist:0,  hasProgram:false, programType:null,        income:&quot;mixed&quot;, score:47},
+  {id:13, name:&quot;PS 48 William Wordsworth&quot;,         borough:&quot;Bronx&quot;,        district:10, capacity:40, enrolled:40, waitlist:26, hasProgram:true,  programType:&quot;Full-Day&quot;,  income:&quot;low&quot;,   score:93},
+  {id:14, name:&quot;PS 78 Theodore Roosevelt&quot;,         borough:&quot;Bronx&quot;,        district:10, capacity:36, enrolled:28, waitlist:3,  hasProgram:true,  programType:&quot;Half-Day&quot;,  income:&quot;low&quot;,   score:71},
+  {id:15, name:&quot;PS 11 Kathryn Phelan&quot;,             borough:&quot;Bronx&quot;,        district:10, capacity:32, enrolled:16, waitlist:0,  hasProgram:false, programType:null,        income:&quot;mixed&quot;, score:53},
+  {id:16, name:&quot;PS 55 Benjamin Franklin&quot;,          borough:&quot;Bronx&quot;,        district:11, capacity:40, enrolled:40, waitlist:19, hasProgram:true,  programType:&quot;Full-Day&quot;,  income:&quot;low&quot;,   score:89},
+  {id:17, name:&quot;PS 75 Emily Dickinson&quot;,            borough:&quot;Manhattan&quot;,    district:3,  capacity:36, enrolled:36, waitlist:27, hasProgram:true,  programType:&quot;Full-Day&quot;,  income:&quot;mixed&quot;, score:94},
+  {id:18, name:&quot;PS 87 William Sherman&quot;,            borough:&quot;Manhattan&quot;,    district:3,  capacity:32, enrolled:30, waitlist:12, hasProgram:true,  programType:&quot;Half-Day&quot;,  income:&quot;mixed&quot;, score:80},
+  {id:19, name:&quot;PS 163 Alfred E. Smith&quot;,           borough:&quot;Manhattan&quot;,    district:3,  capacity:28, enrolled:16, waitlist:0,  hasProgram:false, programType:null,        income:&quot;mixed&quot;, score:61},
+  {id:20, name:&quot;PS 84 Lillian Weber&quot;,              borough:&quot;Manhattan&quot;,    district:3,  capacity:36, enrolled:22, waitlist:0,  hasProgram:false, programType:null,        income:&quot;low&quot;,   score:66},
+  {id:21, name:&quot;PS 200 The Benson School&quot;,         borough:&quot;Staten Island&quot;,district:31, capacity:32, enrolled:24, waitlist:2,  hasProgram:true,  programType:&quot;Half-Day&quot;,  income:&quot;mixed&quot;, score:68},
+  {id:22, name:&quot;PS 44 Andrew Hardie&quot;,              borough:&quot;Staten Island&quot;,district:31, capacity:28, enrolled:14, waitlist:0,  hasProgram:false, programType:null,        income:&quot;mixed&quot;, score:44},
+];
+
+const INITIAL_FAMILIES = [
+  {id:&quot;W001&quot;,name:&quot;Rivera Family&quot;,  child:&quot;Sofia R.&quot;, currentSchool:5,  preferredSchools:[5,1,13],  income:&quot;low&quot;,   distance:0.4, priority:&quot;high&quot;,   status:&quot;unplaced&quot;},
+  {id:&quot;W002&quot;,name:&quot;Chen Family&quot;,    child:&quot;Lucas C.&quot;, currentSchool:17, preferredSchools:[17,18,19], income:&quot;mixed&quot;, distance:0.2, priority:&quot;medium&quot;, status:&quot;unplaced&quot;},
+  {id:&quot;W003&quot;,name:&quot;Johnson Family&quot;, child:&quot;Amara J.&quot;, currentSchool:13, preferredSchools:[13,16,14], income:&quot;low&quot;,   distance:0.6, priority:&quot;high&quot;,   status:&quot;unplaced&quot;},
+  {id:&quot;W004&quot;,name:&quot;Patel Family&quot;,   child:&quot;Aarav P.&quot;, currentSchool:2,  preferredSchools:[2,1,3],   income:&quot;mixed&quot;, distance:0.3, priority:&quot;medium&quot;, status:&quot;unplaced&quot;},
+  {id:&quot;W005&quot;,name:&quot;Williams Family&quot;,child:&quot;Zoe W.&quot;,   currentSchool:8,  preferredSchools:[8,9,11],  income:&quot;low&quot;,   distance:0.5, priority:&quot;high&quot;,   status:&quot;unplaced&quot;},
+  {id:&quot;W006&quot;,name:&quot;Garcia Family&quot;,  child:&quot;Marco G.&quot;, currentSchool:17, preferredSchools:[17,20,18], income:&quot;low&quot;,   distance:0.8, priority:&quot;high&quot;,   status:&quot;unplaced&quot;},
+  {id:&quot;W007&quot;,name:&quot;Thompson Family&quot;,child:&quot;Ella T.&quot;,  currentSchool:5,  preferredSchools:[5,6,7],   income:&quot;mixed&quot;, distance:1.1, priority:&quot;medium&quot;, status:&quot;unplaced&quot;},
+  {id:&quot;W008&quot;,name:&quot;Martinez Family&quot;,child:&quot;Diego M.&quot;, currentSchool:13, preferredSchools:[13,15,14], income:&quot;low&quot;,   distance:0.7, priority:&quot;high&quot;,   status:&quot;unplaced&quot;},
+];
+
+const EXPANSION_CANDIDATES = [
+  {id:4,  score:88, reasons:[&quot;8 available seats&quot;,&quot;High demand neighborhood&quot;,&quot;Proximity to waitlisted families&quot;], priority:&quot;HIGH&quot;},
+  {id:7,  score:82, reasons:[&quot;14 available seats&quot;,&quot;Low-income area underserved&quot;,&quot;No nearby alternatives&quot;],       priority:&quot;HIGH&quot;},
+  {id:15, score:79, reasons:[&quot;16 available seats&quot;,&quot;Bronx equity gap&quot;,&quot;Strong principal interest&quot;],               priority:&quot;MEDIUM&quot;},
+  {id:10, score:74, reasons:[&quot;12 available seats&quot;,&quot;Queens expansion target&quot;,&quot;Transit accessible&quot;],               priority:&quot;MEDIUM&quot;},
+  {id:19, score:71, reasons:[&quot;12 available seats&quot;,&quot;Manhattan coverage gap&quot;,&quot;Community demand&quot;],                  priority:&quot;MEDIUM&quot;},
+  {id:20, score:68, reasons:[&quot;14 available seats&quot;,&quot;Low-income priority zone&quot;,&quot;Underutilized building&quot;],          priority:&quot;LOW&quot;},
+];
+
+const VACANCY_REASONS = [
+  &quot;Family relocated out of district&quot;,&quot;Child transferred to private school&quot;,&quot;Medical withdrawal&quot;,
+  &quot;Family moved boroughs&quot;,&quot;Program type change requested&quot;,&quot;Sibling priority reassignment&quot;,
+  &quot;Income re-verification pending&quot;,&quot;Parent work schedule conflict&quot;,
+];
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+const pct    = (n,d) =&gt; d===0?0:Math.round((n/d)*100);
+const uColor = p =&gt; p&gt;=95?&quot;#ef4444&quot;:p&gt;=80?&quot;#f97316&quot;:p&gt;=60?&quot;#22c55e&quot;:&quot;#94a3b8&quot;;
+const pColor = {HIGH:&quot;#ef4444&quot;,MEDIUM:&quot;#f97316&quot;,LOW:&quot;#22c55e&quot;};
+const pBg    = {HIGH:&quot;rgba(239,68,68,0.1)&quot;,MEDIUM:&quot;rgba(249,115,22,0.1)&quot;,LOW:&quot;rgba(34,197,94,0.1)&quot;};
+const nowTs  = () =&gt; new Date().toLocaleTimeString(&quot;en-US&quot;,{hour:&quot;2-digit&quot;,minute:&quot;2-digit&quot;,second:&quot;2-digit&quot;});
+let vacId = 1000;
+
+// ── Shared UI ─────────────────────────────────────────────────────────────────
+function StatCard({label,value,sub,accent}) {
+  return (
+    &lt;div style={{background:&quot;rgba(255,255,255,0.04)&quot;,border:&quot;1px solid rgba(255,255,255,0.08)&quot;,borderRadius:12,padding:&quot;20px 24px&quot;,flex:1,minWidth:140}}&gt;
+      &lt;div style={{fontSize:11,letterSpacing:&quot;0.1em&quot;,textTransform:&quot;uppercase&quot;,color:&quot;#64748b&quot;,marginBottom:8}}&gt;{label}&lt;/div&gt;
+      &lt;div style={{fontSize:32,fontFamily:&quot;&#x27;DM Serif Display&#x27;,serif&quot;,color:accent||&quot;#f8fafc&quot;,lineHeight:1}}&gt;{value}&lt;/div&gt;
+      {sub &amp;&amp; &lt;div style={{fontSize:12,color:&quot;#64748b&quot;,marginTop:6}}&gt;{sub}&lt;/div&gt;}
+    &lt;/div&gt;
+  );
+}
+
+function UtilBar({value}) {
+  const color = uColor(value);
+  return (
+    &lt;div style={{display:&quot;flex&quot;,alignItems:&quot;center&quot;,gap:8}}&gt;
+      &lt;div style={{flex:1,height:6,background:&quot;rgba(255,255,255,0.06)&quot;,borderRadius:99}}&gt;
+        &lt;div style={{width:`${value}%`,height:&quot;100%&quot;,background:color,borderRadius:99,transition:&quot;width 0.6s ease&quot;}}/&gt;
+      &lt;/div&gt;
+      &lt;span style={{fontSize:11,color,minWidth:32,textAlign:&quot;right&quot;}}&gt;{value}%&lt;/span&gt;
+    &lt;/div&gt;
+  );
+}
+
+function Badge({label,color,bg}) {
+  return (
+    &lt;span style={{fontSize:10,fontWeight:700,letterSpacing:&quot;0.08em&quot;,textTransform:&quot;uppercase&quot;,padding:&quot;3px 8px&quot;,borderRadius:99,background:bg||&quot;rgba(255,255,255,0.08)&quot;,color:color||&quot;#94a3b8&quot;,whiteSpace:&quot;nowrap&quot;}}&gt;
+      {label}
+    &lt;/span&gt;
+  );
+}
+
+// ── Manual Vacancy Modal ──────────────────────────────────────────────────────
+function ManualVacancyModal({schools,onSubmit,onClose}) {
+  const [schoolId,setSchoolId] = useState(&quot;&quot;);
+  const [seats,setSeats]       = useState(1);
+  const [reason,setReason]     = useState(VACANCY_REASONS[0]);
+  const active = schools.filter(s=&gt;s.hasProgram);
+  const submit = () =&gt; { if(!schoolId) return; onSubmit({schoolId:parseInt(schoolId),seats,reason}); onClose(); };
+  return (
+    &lt;div style={{position:&quot;fixed&quot;,inset:0,background:&quot;rgba(0,0,0,0.75)&quot;,zIndex:999,display:&quot;flex&quot;,alignItems:&quot;center&quot;,justifyContent:&quot;center&quot;}} onClick={onClose}&gt;
+      &lt;div style={{background:&quot;#0f1623&quot;,border:&quot;1px solid rgba(255,255,255,0.12)&quot;,borderRadius:16,padding:28,width:440,maxWidth:&quot;92vw&quot;}} onClick={e=&gt;e.stopPropagation()}&gt;
+        &lt;div style={{fontSize:16,fontWeight:700,color:&quot;#f1f5f9&quot;,marginBottom:4}}&gt;Report Vacancy&lt;/div&gt;
+        &lt;div style={{fontSize:12,color:&quot;#64748b&quot;,marginBottom:20}}&gt;Manually log a seat that has opened up.&lt;/div&gt;
+        &lt;div style={{display:&quot;flex&quot;,flexDirection:&quot;column&quot;,gap:14}}&gt;
+          &lt;div&gt;
+            &lt;label style={{fontSize:11,color:&quot;#64748b&quot;,letterSpacing:&quot;0.06em&quot;,textTransform:&quot;uppercase&quot;,display:&quot;block&quot;,marginBottom:6}}&gt;School&lt;/label&gt;
+            &lt;select value={schoolId} onChange={e=&gt;setSchoolId(e.target.value)}
+              style={{width:&quot;100%&quot;,background:&quot;rgba(255,255,255,0.06)&quot;,border:&quot;1px solid rgba(255,255,255,0.1)&quot;,borderRadius:8,padding:&quot;9px 12px&quot;,color:schoolId?&quot;#f1f5f9&quot;:&quot;#64748b&quot;,fontSize:12}}&gt;
+              &lt;option value=&quot;&quot;&gt;Select a school…&lt;/option&gt;
+              {active.map(s=&gt;&lt;option key={s.id} value={s.id}&gt;{s.name}&lt;/option&gt;)}
+            &lt;/select&gt;
+          &lt;/div&gt;
+          &lt;div&gt;
+            &lt;label style={{fontSize:11,color:&quot;#64748b&quot;,letterSpacing:&quot;0.06em&quot;,textTransform:&quot;uppercase&quot;,display:&quot;block&quot;,marginBottom:6}}&gt;Seats Opening&lt;/label&gt;
+            &lt;div style={{display:&quot;flex&quot;,gap:8}}&gt;
+              {[1,2,3,4].map(n=&gt;(
+                &lt;button key={n} onClick={()=&gt;setSeats(n)}
+                  style={{flex:1,padding:&quot;9px 0&quot;,borderRadius:8,border:`1px solid ${seats===n?&quot;rgba(56,189,248,0.5)&quot;:&quot;rgba(255,255,255,0.08)&quot;}`,background:seats===n?&quot;rgba(56,189,248,0.1)&quot;:&quot;rgba(255,255,255,0.03)&quot;,color:seats===n?&quot;#38bdf8&quot;:&quot;#64748b&quot;,fontSize:14,fontWeight:700,cursor:&quot;pointer&quot;}}&gt;
+                  {n}
+                &lt;/button&gt;
+              ))}
+            &lt;/div&gt;
+          &lt;/div&gt;
+          &lt;div&gt;
+            &lt;label style={{fontSize:11,color:&quot;#64748b&quot;,letterSpacing:&quot;0.06em&quot;,textTransform:&quot;uppercase&quot;,display:&quot;block&quot;,marginBottom:6}}&gt;Reason&lt;/label&gt;
+            &lt;select value={reason} onChange={e=&gt;setReason(e.target.value)}
+              style={{width:&quot;100%&quot;,background:&quot;rgba(255,255,255,0.06)&quot;,border:&quot;1px solid rgba(255,255,255,0.1)&quot;,borderRadius:8,padding:&quot;9px 12px&quot;,color:&quot;#f1f5f9&quot;,fontSize:12}}&gt;
+              {VACANCY_REASONS.map(r=&gt;&lt;option key={r} value={r}&gt;{r}&lt;/option&gt;)}
+            &lt;/select&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div style={{display:&quot;flex&quot;,gap:10,marginTop:22}}&gt;
+          &lt;button onClick={onClose} style={{flex:1,padding:&quot;10px 0&quot;,background:&quot;rgba(255,255,255,0.04)&quot;,border:&quot;1px solid rgba(255,255,255,0.08)&quot;,borderRadius:8,color:&quot;#64748b&quot;,fontSize:12,cursor:&quot;pointer&quot;}}&gt;Cancel&lt;/button&gt;
+          &lt;button onClick={submit} disabled={!schoolId}
+            style={{flex:2,padding:&quot;10px 0&quot;,background:schoolId?&quot;linear-gradient(135deg,#38bdf8,#818cf8)&quot;:&quot;rgba(255,255,255,0.06)&quot;,border:&quot;none&quot;,borderRadius:8,color:schoolId?&quot;#fff&quot;:&quot;#475569&quot;,fontSize:12,fontWeight:700,cursor:schoolId?&quot;pointer&quot;:&quot;not-allowed&quot;}}&gt;
+            Log Vacancy
+          &lt;/button&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  );
+}
+
+// ── Dashboard Tab ─────────────────────────────────────────────────────────────
+function DashboardTab({schools,vacancies}) {
+  const total    = schools.reduce((a,s)=&gt;a+s.capacity,0);
+  const enrolled = schools.reduce((a,s)=&gt;a+s.enrolled,0);
+  const waitlist = schools.reduce((a,s)=&gt;a+s.waitlist,0);
+  const programs = schools.filter(s=&gt;s.hasProgram).length;
+  const openVac  = vacancies.filter(v=&gt;v.status===&quot;open&quot;).reduce((a,v)=&gt;a+v.seats,0);
+  const byBorough = BOROUGHS.map(b=&gt;{
+    const bs=schools.filter(s=&gt;s.borough===b);
+    return {borough:b,capacity:bs.reduce((a,s)=&gt;a+s.capacity,0),enrolled:bs.reduce((a,s)=&gt;a+s.enrolled,0),waitlist:bs.reduce((a,s)=&gt;a+s.waitlist,0),programs:bs.filter(s=&gt;s.hasProgram).length};
+  });
+  return (
+    &lt;div style={{display:&quot;flex&quot;,flexDirection:&quot;column&quot;,gap:24}}&gt;
+      &lt;div style={{display:&quot;flex&quot;,gap:16,flexWrap:&quot;wrap&quot;}}&gt;
+        &lt;StatCard label=&quot;Total 3K Seats&quot;      value={total.toLocaleString()}    sub=&quot;Across all programs&quot;          accent=&quot;#38bdf8&quot;/&gt;
+        &lt;StatCard label=&quot;Currently Enrolled&quot;  value={enrolled.toLocaleString()} sub={`${pct(enrolled,total)}% utilization`} accent=&quot;#a78bfa&quot;/&gt;
+        &lt;StatCard label=&quot;Waitlisted Families&quot; value={waitlist.toLocaleString()} sub=&quot;Seeking placement&quot;             accent=&quot;#f97316&quot;/&gt;
+        &lt;StatCard label=&quot;Active Programs&quot;     value={programs}                  sub={`of ${schools.length} schools`} accent=&quot;#22c55e&quot;/&gt;
+        &lt;StatCard label=&quot;Live Vacancies&quot;      value={openVac}                   sub=&quot;Open seats right now&quot;          accent=&quot;#38bdf8&quot;/&gt;
+      &lt;/div&gt;
+      {openVac&gt;0 &amp;&amp; (
+        &lt;div style={{background:&quot;rgba(56,189,248,0.05)&quot;,border:&quot;1px solid rgba(56,189,248,0.25)&quot;,borderRadius:12,padding:&quot;14px 18px&quot;,display:&quot;flex&quot;,alignItems:&quot;center&quot;,gap:12}}&gt;
+          &lt;span style={{fontSize:20}}&gt;⚡&lt;/span&gt;
+          &lt;div&gt;
+            &lt;div style={{fontSize:13,fontWeight:700,color:&quot;#38bdf8&quot;}}&gt;{openVac} seat{openVac&gt;1?&quot;s&quot;:&quot;&quot;} available right now&lt;/div&gt;
+            &lt;div style={{fontSize:11,color:&quot;#64748b&quot;,marginTop:2}}&gt;New vacancies reported. Head to Vacancy Feed or Seat Reassignment to fill them.&lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+      )}
+      &lt;div style={{background:&quot;rgba(255,255,255,0.03)&quot;,border:&quot;1px solid rgba(255,255,255,0.07)&quot;,borderRadius:14,overflow:&quot;hidden&quot;}}&gt;
+        &lt;div style={{padding:&quot;16px 20px&quot;,borderBottom:&quot;1px solid rgba(255,255,255,0.06)&quot;,fontSize:13,fontWeight:600,color:&quot;#cbd5e1&quot;}}&gt;Borough Snapshot&lt;/div&gt;
+        &lt;div style={{overflowX:&quot;auto&quot;}}&gt;
+          &lt;table style={{width:&quot;100%&quot;,borderCollapse:&quot;collapse&quot;,minWidth:600}}&gt;
+            &lt;thead&gt;
+              &lt;tr style={{background:&quot;rgba(255,255,255,0.02)&quot;}}&gt;
+                {[&quot;Borough&quot;,&quot;Programs&quot;,&quot;Capacity&quot;,&quot;Enrolled&quot;,&quot;Waitlist&quot;,&quot;Utilization&quot;].map(h=&gt;(
+                  &lt;th key={h} style={{padding:&quot;10px 16px&quot;,textAlign:&quot;left&quot;,fontSize:11,letterSpacing:&quot;0.08em&quot;,textTransform:&quot;uppercase&quot;,color:&quot;#475569&quot;,fontWeight:600}}&gt;{h}&lt;/th&gt;
+                ))}
+              &lt;/tr&gt;
+            &lt;/thead&gt;
+            &lt;tbody&gt;
+              {byBorough.map((b,i)=&gt;(
+                &lt;tr key={b.borough} style={{borderTop:&quot;1px solid rgba(255,255,255,0.04)&quot;,background:i%2===0?&quot;transparent&quot;:&quot;rgba(255,255,255,0.01)&quot;}}&gt;
+                  &lt;td style={{padding:&quot;12px 16px&quot;,fontWeight:600,color:&quot;#f1f5f9&quot;,fontSize:13}}&gt;{b.borough}&lt;/td&gt;
+                  &lt;td style={{padding:&quot;12px 16px&quot;,color:&quot;#94a3b8&quot;,fontSize:13}}&gt;{b.programs}&lt;/td&gt;
+                  &lt;td style={{padding:&quot;12px 16px&quot;,color:&quot;#94a3b8&quot;,fontSize:13}}&gt;{b.capacity}&lt;/td&gt;
+                  &lt;td style={{padding:&quot;12px 16px&quot;,color:&quot;#94a3b8&quot;,fontSize:13}}&gt;{b.enrolled}&lt;/td&gt;
+                  &lt;td style={{padding:&quot;12px 16px&quot;,fontSize:13}}&gt;&lt;span style={{color:b.waitlist&gt;0?&quot;#f97316&quot;:&quot;#64748b&quot;}}&gt;{b.waitlist}&lt;/span&gt;&lt;/td&gt;
+                  &lt;td style={{padding:&quot;12px 16px&quot;,minWidth:140}}&gt;&lt;UtilBar value={pct(b.enrolled,b.capacity)}/&gt;&lt;/td&gt;
+                &lt;/tr&gt;
+              ))}
+            &lt;/tbody&gt;
+          &lt;/table&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+      &lt;div style={{display:&quot;grid&quot;,gridTemplateColumns:&quot;1fr 1fr&quot;,gap:16}}&gt;
+        &lt;div style={{background:&quot;rgba(255,255,255,0.03)&quot;,border:&quot;1px solid rgba(255,255,255,0.07)&quot;,borderRadius:14,padding:20}}&gt;
+          &lt;div style={{fontSize:13,fontWeight:600,color:&quot;#cbd5e1&quot;,marginBottom:16}}&gt;Over-Subscribed Schools&lt;/div&gt;
+          {schools.filter(s=&gt;s.waitlist&gt;10).sort((a,b)=&gt;b.waitlist-a.waitlist).slice(0,5).map(s=&gt;(
+            &lt;div key={s.id} style={{display:&quot;flex&quot;,justifyContent:&quot;space-between&quot;,alignItems:&quot;center&quot;,padding:&quot;8px 0&quot;,borderBottom:&quot;1px solid rgba(255,255,255,0.04)&quot;}}&gt;
+              &lt;div&gt;
+                &lt;div style={{fontSize:12,color:&quot;#e2e8f0&quot;,fontWeight:500}}&gt;{s.name.split(&quot; &quot;).slice(0,3).join(&quot; &quot;)}&lt;/div&gt;
+                &lt;div style={{fontSize:11,color:&quot;#64748b&quot;}}&gt;{s.borough}&lt;/div&gt;
+              &lt;/div&gt;
+              &lt;Badge label={`+${s.waitlist} waitlist`} color=&quot;#f97316&quot; bg=&quot;rgba(249,115,22,0.1)&quot;/&gt;
+            &lt;/div&gt;
+          ))}
+        &lt;/div&gt;
+        &lt;div style={{background:&quot;rgba(255,255,255,0.03)&quot;,border:&quot;1px solid rgba(255,255,255,0.07)&quot;,borderRadius:14,padding:20}}&gt;
+          &lt;div style={{fontSize:13,fontWeight:600,color:&quot;#cbd5e1&quot;,marginBottom:16}}&gt;Available Capacity&lt;/div&gt;
+          {schools.filter(s=&gt;s.enrolled&lt;s.capacity*0.85).sort((a,b)=&gt;(b.capacity-b.enrolled)-(a.capacity-a.enrolled)).slice(0,5).map(s=&gt;(
+            &lt;div key={s.id} style={{display:&quot;flex&quot;,justifyContent:&quot;space-between&quot;,alignItems:&quot;center&quot;,padding:&quot;8px 0&quot;,borderBottom:&quot;1px solid rgba(255,255,255,0.04)&quot;}}&gt;
+              &lt;div&gt;
+                &lt;div style={{fontSize:12,color:&quot;#e2e8f0&quot;,fontWeight:500}}&gt;{s.name.split(&quot; &quot;).slice(0,3).join(&quot; &quot;)}&lt;/div&gt;
+                &lt;div style={{fontSize:11,color:&quot;#64748b&quot;}}&gt;{s.borough}&lt;/div&gt;
+              &lt;/div&gt;
+              &lt;Badge label={`${s.capacity-s.enrolled} open`} color=&quot;#22c55e&quot; bg=&quot;rgba(34,197,94,0.1)&quot;/&gt;
+            &lt;/div&gt;
+          ))}
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  );
+}
+
+// ── Vacancy Feed Tab ──────────────────────────────────────────────────────────
+function VacancyTab({vacancies,schools,onDismiss,onFill,liveEnabled,setLiveEnabled}) {
+  const open   = vacancies.filter(v=&gt;v.status===&quot;open&quot;);
+  const filled = vacancies.filter(v=&gt;v.status===&quot;filled&quot;);
+  const sName  = id =&gt; { const s=schools.find(sc=&gt;sc.id===id); return s?s.name:&quot;Unknown&quot;; };
+  return (
+    &lt;div style={{display:&quot;flex&quot;,flexDirection:&quot;column&quot;,gap:20}}&gt;
+      &lt;div style={{display:&quot;flex&quot;,gap:16,flexWrap:&quot;wrap&quot;}}&gt;
+        &lt;StatCard label=&quot;Open Vacancies&quot;   value={open.length}   sub={`${open.reduce((a,v)=&gt;a+v.seats,0)} total seats`} accent=&quot;#38bdf8&quot;/&gt;
+        &lt;StatCard label=&quot;Filled Today&quot;     value={filled.length} sub=&quot;Successfully placed&quot;   accent=&quot;#22c55e&quot;/&gt;
+        &lt;StatCard label=&quot;Via Live Feed&quot;    value={vacancies.filter(v=&gt;v.source===&quot;auto&quot;).length}   sub=&quot;Auto-detected&quot;   accent=&quot;#a78bfa&quot;/&gt;
+        &lt;StatCard label=&quot;Via Manual Entry&quot; value={vacancies.filter(v=&gt;v.source===&quot;manual&quot;).length} sub=&quot;Staff reported&quot;   accent=&quot;#f97316&quot;/&gt;
+      &lt;/div&gt;
+      &lt;div style={{display:&quot;flex&quot;,justifyContent:&quot;space-between&quot;,alignItems:&quot;center&quot;}}&gt;
+        &lt;div style={{fontSize:15,fontWeight:700,color:&quot;#f1f5f9&quot;}}&gt;Live Vacancy Feed&lt;/div&gt;
+        &lt;div style={{display:&quot;flex&quot;,alignItems:&quot;center&quot;,gap:10}}&gt;
+          &lt;span style={{fontSize:12,color:&quot;#64748b&quot;}}&gt;Simulated feed:&lt;/span&gt;
+          &lt;button onClick={()=&gt;setLiveEnabled(p=&gt;!p)}
+            style={{background:liveEnabled?&quot;rgba(34,197,94,0.15)&quot;:&quot;rgba(255,255,255,0.06)&quot;,border:`1px solid ${liveEnabled?&quot;rgba(34,197,94,0.4)&quot;:&quot;rgba(255,255,255,0.1)&quot;}`,borderRadius:99,padding:&quot;5px 16px&quot;,color:liveEnabled?&quot;#22c55e&quot;:&quot;#64748b&quot;,fontSize:11,fontWeight:700,cursor:&quot;pointer&quot;,display:&quot;flex&quot;,alignItems:&quot;center&quot;,gap:6}}&gt;
+            {liveEnabled &amp;&amp; &lt;span className=&quot;pulse-dot&quot; style={{width:7,height:7,borderRadius:&quot;50%&quot;,background:&quot;#22c55e&quot;,display:&quot;inline-block&quot;}}/&gt;}
+            {liveEnabled?&quot;ON&quot;:&quot;OFF&quot;}
+          &lt;/button&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+      {open.length===0 &amp;&amp; (
+        &lt;div style={{padding:32,textAlign:&quot;center&quot;,color:&quot;#475569&quot;,fontSize:13,background:&quot;rgba(255,255,255,0.02)&quot;,borderRadius:12,border:&quot;1px solid rgba(255,255,255,0.05)&quot;}}&gt;
+          No open vacancies right now. Enable the live feed or log one manually.
+        &lt;/div&gt;
+      )}
+      {open.map(v=&gt;(
+        &lt;div key={v.id} className=&quot;slide-in&quot; style={{background:&quot;rgba(56,189,248,0.05)&quot;,border:&quot;1px solid rgba(56,189,248,0.22)&quot;,borderRadius:12,padding:&quot;16px 18px&quot;}}&gt;
+          &lt;div style={{display:&quot;flex&quot;,justifyContent:&quot;space-between&quot;,alignItems:&quot;flex-start&quot;}}&gt;
+            &lt;div style={{flex:1}}&gt;
+              &lt;div style={{display:&quot;flex&quot;,alignItems:&quot;center&quot;,gap:10,marginBottom:4,flexWrap:&quot;wrap&quot;}}&gt;
+                &lt;span className=&quot;pulse-dot&quot; style={{width:9,height:9,borderRadius:&quot;50%&quot;,background:&quot;#38bdf8&quot;,display:&quot;inline-block&quot;,boxShadow:&quot;0 0 8px #38bdf8&quot;}}/&gt;
+                &lt;span style={{fontSize:14,fontWeight:700,color:&quot;#f1f5f9&quot;}}&gt;{sName(v.schoolId).split(&quot; &quot;).slice(0,5).join(&quot; &quot;)}&lt;/span&gt;
+                &lt;Badge label={v.source===&quot;auto&quot;?&quot;Live Feed&quot;:&quot;Manual&quot;} color={v.source===&quot;auto&quot;?&quot;#38bdf8&quot;:&quot;#a78bfa&quot;} bg={v.source===&quot;auto&quot;?&quot;rgba(56,189,248,0.1)&quot;:&quot;rgba(167,139,250,0.1)&quot;}/&gt;
+              &lt;/div&gt;
+              &lt;div style={{fontSize:12,color:&quot;#64748b&quot;,marginLeft:19}}&gt;{v.reason}&lt;/div&gt;
+              &lt;div style={{fontSize:11,color:&quot;#475569&quot;,marginLeft:19,marginTop:2}}&gt;Reported at {v.time}&lt;/div&gt;
+            &lt;/div&gt;
+            &lt;div style={{textAlign:&quot;right&quot;,marginLeft:16}}&gt;
+              &lt;div style={{fontSize:32,fontFamily:&quot;&#x27;DM Serif Display&#x27;,serif&quot;,color:&quot;#38bdf8&quot;,lineHeight:1}}&gt;+{v.seats}&lt;/div&gt;
+              &lt;div style={{fontSize:10,color:&quot;#64748b&quot;,letterSpacing:&quot;0.06em&quot;}}&gt;SEAT{v.seats&gt;1?&quot;S&quot;:&quot;&quot;}&lt;/div&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+          &lt;div style={{display:&quot;flex&quot;,gap:10,marginTop:14}}&gt;
+            &lt;button onClick={()=&gt;onFill(v.id)} style={{background:&quot;rgba(34,197,94,0.15)&quot;,border:&quot;1px solid rgba(34,197,94,0.3)&quot;,color:&quot;#22c55e&quot;,padding:&quot;7px 18px&quot;,borderRadius:7,fontSize:12,fontWeight:700,cursor:&quot;pointer&quot;}}&gt;✓ Fill from Waitlist&lt;/button&gt;
+            &lt;button onClick={()=&gt;onDismiss(v.id)} style={{background:&quot;rgba(255,255,255,0.04)&quot;,border:&quot;1px solid rgba(255,255,255,0.08)&quot;,color:&quot;#64748b&quot;,padding:&quot;7px 14px&quot;,borderRadius:7,fontSize:12,cursor:&quot;pointer&quot;}}&gt;Dismiss&lt;/button&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+      ))}
+      {filled.length&gt;0 &amp;&amp; (
+        &lt;div style={{background:&quot;rgba(255,255,255,0.02)&quot;,border:&quot;1px solid rgba(255,255,255,0.06)&quot;,borderRadius:12,padding:16}}&gt;
+          &lt;div style={{fontSize:12,fontWeight:600,color:&quot;#475569&quot;,marginBottom:12,letterSpacing:&quot;0.06em&quot;,textTransform:&quot;uppercase&quot;}}&gt;Filled Vacancies&lt;/div&gt;
+          {filled.map(v=&gt;(
+            &lt;div key={v.id} style={{display:&quot;flex&quot;,justifyContent:&quot;space-between&quot;,alignItems:&quot;center&quot;,padding:&quot;8px 0&quot;,borderBottom:&quot;1px solid rgba(255,255,255,0.04)&quot;}}&gt;
+              &lt;div&gt;
+                &lt;span style={{fontSize:12,color:&quot;#94a3b8&quot;}}&gt;{sName(v.schoolId).split(&quot; &quot;).slice(0,4).join(&quot; &quot;)}&lt;/span&gt;
+                &lt;span style={{fontSize:11,color:&quot;#475569&quot;,marginLeft:10}}&gt;{v.reason}&lt;/span&gt;
+              &lt;/div&gt;
+              &lt;div style={{display:&quot;flex&quot;,alignItems:&quot;center&quot;,gap:10}}&gt;
+                &lt;span style={{fontSize:11,color:&quot;#475569&quot;}}&gt;{v.time}&lt;/span&gt;
+                &lt;Badge label=&quot;Filled ✓&quot; color=&quot;#22c55e&quot; bg=&quot;rgba(34,197,94,0.1)&quot;/&gt;
+              &lt;/div&gt;
+            &lt;/div&gt;
+          ))}
+        &lt;/div&gt;
+      )}
+    &lt;/div&gt;
+  );
+}
+
+// ── Seat Reassignment Tab ─────────────────────────────────────────────────────
+function ReassignmentTab({schools,vacancies,onFill}) {
+  const [families,setFamilies] = useState(INITIAL_FAMILIES);
+  const [placements,setPlacements] = useState({});
+  const [selected,setSelected] = useState(null);
+
+  const effectiveAvail = s =&gt; {
+    const vacSeats = vacancies.filter(v=&gt;v.schoolId===s.id&amp;&amp;v.status===&quot;open&quot;).reduce((a,v)=&gt;a+v.seats,0);
+    const placed   = Object.values(placements).filter(p=&gt;p.schoolId===s.id).length;
+    return Math.max(0, s.capacity - s.enrolled + vacSeats - placed);
+  };
+
+  const getSchool = id =&gt; schools.find(s=&gt;s.id===id);
+
+  const suggest = fam =&gt; {
+    for(const id of fam.preferredSchools){ const s=getSchool(id); if(s&amp;&amp;effectiveAvail(s)&gt;0) return s; }
+    return schools.filter(s=&gt;s.hasProgram&amp;&amp;effectiveAvail(s)&gt;0).sort((a,b)=&gt;b.score-a.score)[0]||null;
+  };
+
+  const place = (famId,school) =&gt; {
+    setPlacements(p=&gt;({...p,[famId]:{schoolId:school.id,schoolName:school.name}}));
+    setFamilies(f=&gt;f.map(fam=&gt;fam.id===famId?{...fam,status:&quot;placed&quot;}:fam));
+  };
+
+  const autoPlace = () =&gt; {
+    const np={...placements};
+    const nf=families.map(fam=&gt;{
+      if(fam.status===&quot;placed&quot;) return fam;
+      const s=suggest(fam);
+      if(s){np[fam.id]={schoolId:s.id,schoolName:s.name};return{...fam,status:&quot;placed&quot;};}
+      return fam;
+    });
+    setPlacements(np); setFamilies(nf);
+  };
+
+  const placed = families.filter(f=&gt;f.status===&quot;placed&quot;).length;
+  const openVac = vacancies.filter(v=&gt;v.status===&quot;open&quot;);
+
+  return (
+    &lt;div style={{display:&quot;flex&quot;,gap:20,flexWrap:&quot;wrap&quot;}}&gt;
+      &lt;div style={{flex:1,minWidth:300,display:&quot;flex&quot;,flexDirection:&quot;column&quot;,gap:16}}&gt;
+        {openVac.length&gt;0 &amp;&amp; (
+          &lt;div style={{background:&quot;rgba(56,189,248,0.06)&quot;,border:&quot;1px solid rgba(56,189,248,0.25)&quot;,borderRadius:12,padding:&quot;14px 16px&quot;}}&gt;
+            &lt;div style={{fontSize:13,fontWeight:700,color:&quot;#38bdf8&quot;,marginBottom:8}}&gt;⚡ {openVac.length} Open Vacanc{openVac.length&gt;1?&quot;ies&quot;:&quot;y&quot;} — Fill Now&lt;/div&gt;
+            {openVac.map(v=&gt;{ const s=getSchool(v.schoolId); if(!s) return null;
+              const nextFam=families.find(f=&gt;f.status===&quot;unplaced&quot;);
+              return (
+                &lt;div key={v.id} style={{display:&quot;flex&quot;,justifyContent:&quot;space-between&quot;,alignItems:&quot;center&quot;,padding:&quot;8px 0&quot;,borderBottom:&quot;1px solid rgba(56,189,248,0.1)&quot;}}&gt;
+                  &lt;div&gt;
+                    &lt;span style={{fontSize:12,fontWeight:600,color:&quot;#f1f5f9&quot;}}&gt;{s.name.split(&quot; &quot;).slice(0,3).join(&quot; &quot;)}&lt;/span&gt;
+                    &lt;span style={{fontSize:11,color:&quot;#64748b&quot;,marginLeft:8}}&gt;{v.seats} seat{v.seats&gt;1?&quot;s&quot;:&quot;&quot;} · {v.reason}&lt;/span&gt;
+                  &lt;/div&gt;
+                  &lt;button onClick={()=&gt;{onFill(v.id);if(nextFam)place(nextFam.id,s);}}
+                    style={{background:&quot;rgba(34,197,94,0.15)&quot;,border:&quot;1px solid rgba(34,197,94,0.3)&quot;,color:&quot;#22c55e&quot;,padding:&quot;5px 12px&quot;,borderRadius:6,fontSize:11,fontWeight:700,cursor:&quot;pointer&quot;}}&gt;
+                    Fill →
+                  &lt;/button&gt;
+                &lt;/div&gt;
+              );
+            })}
+          &lt;/div&gt;
+        )}
+        &lt;div style={{display:&quot;flex&quot;,justifyContent:&quot;space-between&quot;,alignItems:&quot;center&quot;}}&gt;
+          &lt;div&gt;
+            &lt;div style={{fontSize:16,fontWeight:700,color:&quot;#f1f5f9&quot;}}&gt;Waitlist Families&lt;/div&gt;
+            &lt;div style={{fontSize:12,color:&quot;#64748b&quot;,marginTop:2}}&gt;{placed} of {families.length} placed this cycle&lt;/div&gt;
+          &lt;/div&gt;
+          &lt;button onClick={autoPlace} style={{background:&quot;linear-gradient(135deg,#38bdf8,#818cf8)&quot;,border:&quot;none&quot;,color:&quot;#fff&quot;,padding:&quot;10px 20px&quot;,borderRadius:8,fontSize:12,fontWeight:700,cursor:&quot;pointer&quot;}}&gt;⚡ Auto-Optimize All&lt;/button&gt;
+        &lt;/div&gt;
+        &lt;div style={{height:6,background:&quot;rgba(255,255,255,0.06)&quot;,borderRadius:99}}&gt;
+          &lt;div style={{width:`${pct(placed,families.length)}%`,height:&quot;100%&quot;,background:&quot;linear-gradient(90deg,#38bdf8,#818cf8)&quot;,borderRadius:99,transition:&quot;width 0.6s ease&quot;}}/&gt;
+        &lt;/div&gt;
+        {families.map(fam=&gt;{
+          const sugg=suggest(fam), isPlaced=fam.status===&quot;placed&quot;, placement=placements[fam.id];
+          return (
+            &lt;div key={fam.id} onClick={()=&gt;setSelected(selected===fam.id?null:fam.id)}
+              style={{background:selected===fam.id?&quot;rgba(56,189,248,0.06)&quot;:&quot;rgba(255,255,255,0.03)&quot;,border:`1px solid ${selected===fam.id?&quot;rgba(56,189,248,0.3)&quot;:&quot;rgba(255,255,255,0.07)&quot;}`,borderRadius:12,padding:&quot;14px 16px&quot;,cursor:&quot;pointer&quot;,transition:&quot;all 0.2s&quot;}}&gt;
+              &lt;div style={{display:&quot;flex&quot;,justifyContent:&quot;space-between&quot;,alignItems:&quot;flex-start&quot;}}&gt;
+                &lt;div&gt;
+                  &lt;div style={{display:&quot;flex&quot;,alignItems:&quot;center&quot;,gap:8,flexWrap:&quot;wrap&quot;}}&gt;
+                    &lt;span style={{fontSize:13,fontWeight:600,color:&quot;#f1f5f9&quot;}}&gt;{fam.child}&lt;/span&gt;
+                    &lt;Badge label={fam.priority} color={fam.priority===&quot;high&quot;?&quot;#f97316&quot;:&quot;#94a3b8&quot;} bg={fam.priority===&quot;high&quot;?&quot;rgba(249,115,22,0.1)&quot;:&quot;rgba(148,163,184,0.1)&quot;}/&gt;
+                    {isPlaced &amp;&amp; &lt;Badge label=&quot;✓ Placed&quot; color=&quot;#22c55e&quot; bg=&quot;rgba(34,197,94,0.1)&quot;/&gt;}
+                  &lt;/div&gt;
+                  &lt;div style={{fontSize:11,color:&quot;#64748b&quot;,marginTop:4}}&gt;{fam.name} · {fam.distance}mi · Income: {fam.income}&lt;/div&gt;
+                &lt;/div&gt;
+                {!isPlaced&amp;&amp;sugg&amp;&amp;(
+                  &lt;button onClick={e=&gt;{e.stopPropagation();place(fam.id,sugg);}}
+                    style={{background:&quot;rgba(34,197,94,0.15)&quot;,border:&quot;1px solid rgba(34,197,94,0.3)&quot;,color:&quot;#22c55e&quot;,padding:&quot;6px 14px&quot;,borderRadius:7,fontSize:11,fontWeight:700,cursor:&quot;pointer&quot;,marginLeft:8}}&gt;
+                    Place →
+                  &lt;/button&gt;
+                )}
+              &lt;/div&gt;
+              {selected===fam.id &amp;&amp; (
+                &lt;div style={{marginTop:12,paddingTop:12,borderTop:&quot;1px solid rgba(255,255,255,0.06)&quot;}}&gt;
+                  {isPlaced ? (
+                    &lt;div style={{fontSize:12,color:&quot;#22c55e&quot;}}&gt;✓ Assigned to: {placement?.schoolName}&lt;/div&gt;
+                  ) : (
+                    &lt;div&gt;
+                      &lt;div style={{fontSize:11,color:&quot;#64748b&quot;,marginBottom:8}}&gt;Preferred schools &amp;amp; availability:&lt;/div&gt;
+                      {fam.preferredSchools.map(sid=&gt;{
+                        const s=getSchool(sid); if(!s) return null;
+                        const avail=effectiveAvail(s);
+                        return (
+                          &lt;div key={sid} style={{display:&quot;flex&quot;,justifyContent:&quot;space-between&quot;,alignItems:&quot;center&quot;,padding:&quot;6px 0&quot;}}&gt;
+                            &lt;span style={{fontSize:12,color:&quot;#cbd5e1&quot;}}&gt;{s.name.split(&quot; &quot;).slice(0,4).join(&quot; &quot;)}&lt;/span&gt;
+                            &lt;div style={{display:&quot;flex&quot;,gap:8,alignItems:&quot;center&quot;}}&gt;
+                              &lt;Badge label={avail&gt;0?`${avail} open`:&quot;Full&quot;} color={avail&gt;0?&quot;#22c55e&quot;:&quot;#ef4444&quot;} bg={avail&gt;0?&quot;rgba(34,197,94,0.1)&quot;:&quot;rgba(239,68,68,0.1)&quot;}/&gt;
+                              {avail&gt;0&amp;&amp;&lt;button onClick={e=&gt;{e.stopPropagation();place(fam.id,s);}} style={{background:&quot;rgba(56,189,248,0.15)&quot;,border:&quot;none&quot;,color:&quot;#38bdf8&quot;,padding:&quot;4px 10px&quot;,borderRadius:5,fontSize:10,cursor:&quot;pointer&quot;,fontWeight:700}}&gt;Select&lt;/button&gt;}
+                            &lt;/div&gt;
+                          &lt;/div&gt;
+                        );
+                      })}
+                    &lt;/div&gt;
+                  )}
+                &lt;/div&gt;
+              )}
+            &lt;/div&gt;
+          );
+        })}
+      &lt;/div&gt;
+      &lt;div style={{width:240,flexShrink:0}}&gt;
+        &lt;div style={{background:&quot;rgba(255,255,255,0.03)&quot;,border:&quot;1px solid rgba(255,255,255,0.07)&quot;,borderRadius:14,padding:20,position:&quot;sticky&quot;,top:80}}&gt;
+          &lt;div style={{fontSize:13,fontWeight:600,color:&quot;#cbd5e1&quot;,marginBottom:16}}&gt;Cycle Summary&lt;/div&gt;
+          {[[&quot;Families in Queue&quot;,families.length,&quot;#f1f5f9&quot;],[&quot;High Priority&quot;,families.filter(f=&gt;f.priority===&quot;high&quot;).length,&quot;#f97316&quot;],[&quot;Placed&quot;,placed,&quot;#22c55e&quot;],[&quot;Pending&quot;,families.length-placed,&quot;#94a3b8&quot;],[&quot;Vacancy Seats Open&quot;,openVac.reduce((a,v)=&gt;a+v.seats,0),&quot;#38bdf8&quot;]].map(([l,v,c])=&gt;(
+            &lt;div key={l} style={{display:&quot;flex&quot;,justifyContent:&quot;space-between&quot;,padding:&quot;8px 0&quot;,borderBottom:&quot;1px solid rgba(255,255,255,0.05)&quot;}}&gt;
+              &lt;span style={{fontSize:12,color:&quot;#64748b&quot;}}&gt;{l}&lt;/span&gt;
+              &lt;span style={{fontSize:14,fontWeight:700,color:c}}&gt;{v}&lt;/span&gt;
+            &lt;/div&gt;
+          ))}
+          &lt;div style={{marginTop:16,padding:12,background:&quot;rgba(56,189,248,0.05)&quot;,borderRadius:8,border:&quot;1px solid rgba(56,189,248,0.12)&quot;}}&gt;
+            &lt;div style={{fontSize:11,color:&quot;#38bdf8&quot;,fontWeight:600,marginBottom:6}}&gt;Placement Rate&lt;/div&gt;
+            &lt;div style={{fontSize:28,fontFamily:&quot;&#x27;DM Serif Display&#x27;,serif&quot;,color:&quot;#38bdf8&quot;}}&gt;{pct(placed,families.length)}%&lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  );
+}
+
+// ── Expansion Tab ─────────────────────────────────────────────────────────────
+function ExpansionTab({schools}) {
+  const [filter,setFilter] = useState(&quot;ALL&quot;);
+  const list = filter===&quot;ALL&quot;?EXPANSION_CANDIDATES:EXPANSION_CANDIDATES.filter(c=&gt;c.priority===filter);
+  return (
+    &lt;div style={{display:&quot;flex&quot;,flexDirection:&quot;column&quot;,gap:20}}&gt;
+      &lt;div style={{display:&quot;flex&quot;,gap:10,alignItems:&quot;center&quot;,flexWrap:&quot;wrap&quot;}}&gt;
+        &lt;span style={{fontSize:13,color:&quot;#94a3b8&quot;}}&gt;Filter:&lt;/span&gt;
+        {[&quot;ALL&quot;,&quot;HIGH&quot;,&quot;MEDIUM&quot;,&quot;LOW&quot;].map(f=&gt;(
+          &lt;button key={f} onClick={()=&gt;setFilter(f)}
+            style={{padding:&quot;6px 16px&quot;,borderRadius:7,border:`1px solid ${filter===f?(pColor[f]||&quot;#38bdf8&quot;):&quot;rgba(255,255,255,0.1)&quot;}`,background:filter===f?(pBg[f]||&quot;rgba(56,189,248,0.1)&quot;):&quot;transparent&quot;,color:filter===f?(pColor[f]||&quot;#38bdf8&quot;):&quot;#64748b&quot;,fontSize:11,fontWeight:700,cursor:&quot;pointer&quot;}}&gt;
+            {f}
+          &lt;/button&gt;
+        ))}
+      &lt;/div&gt;
+      &lt;div style={{display:&quot;grid&quot;,gridTemplateColumns:&quot;repeat(auto-fill,minmax(320px,1fr))&quot;,gap:16}}&gt;
+        {list.map(c=&gt;{
+          const s=schools.find(sc=&gt;sc.id===c.id); if(!s) return null;
+          return (
+            &lt;div key={c.id} style={{background:&quot;rgba(255,255,255,0.03)&quot;,border:`1px solid ${pColor[c.priority]}33`,borderRadius:14,padding:20,position:&quot;relative&quot;,overflow:&quot;hidden&quot;}}&gt;
+              &lt;div style={{position:&quot;absolute&quot;,top:0,right:0,width:60,height:60,background:`radial-gradient(circle,${pColor[c.priority]}22,transparent)`,borderRadius:&quot;0 14px 0 60px&quot;}}/&gt;
+              &lt;div style={{display:&quot;flex&quot;,justifyContent:&quot;space-between&quot;,alignItems:&quot;flex-start&quot;,marginBottom:12}}&gt;
+                &lt;div&gt;
+                  &lt;Badge label={c.priority+&quot; PRIORITY&quot;} color={pColor[c.priority]} bg={pBg[c.priority]}/&gt;
+                  &lt;div style={{fontSize:14,fontWeight:700,color:&quot;#f1f5f9&quot;,marginTop:8}}&gt;{s.name.split(&quot; &quot;).slice(0,4).join(&quot; &quot;)}&lt;/div&gt;
+                  &lt;div style={{fontSize:11,color:&quot;#64748b&quot;,marginTop:2}}&gt;{s.borough} · District {s.district}&lt;/div&gt;
+                &lt;/div&gt;
+                &lt;div style={{textAlign:&quot;right&quot;}}&gt;
+                  &lt;div style={{fontSize:28,fontFamily:&quot;&#x27;DM Serif Display&#x27;,serif&quot;,color:pColor[c.priority]}}&gt;{c.score}&lt;/div&gt;
+                  &lt;div style={{fontSize:10,color:&quot;#64748b&quot;,letterSpacing:&quot;0.06em&quot;}}&gt;EXP. SCORE&lt;/div&gt;
+                &lt;/div&gt;
+              &lt;/div&gt;
+              &lt;div style={{display:&quot;flex&quot;,gap:8,marginBottom:12,flexWrap:&quot;wrap&quot;}}&gt;
+                &lt;Badge label={`${s.capacity-s.enrolled} seats avail.`} color=&quot;#22c55e&quot; bg=&quot;rgba(34,197,94,0.1)&quot;/&gt;
+                &lt;Badge label={s.income+&quot; income&quot;} color=&quot;#94a3b8&quot;/&gt;
+              &lt;/div&gt;
+              {c.reasons.map((r,i)=&gt;(
+                &lt;div key={i} style={{display:&quot;flex&quot;,gap:8,marginBottom:4}}&gt;
+                  &lt;span style={{color:pColor[c.priority],fontSize:12,marginTop:1}}&gt;▸&lt;/span&gt;
+                  &lt;span style={{fontSize:12,color:&quot;#94a3b8&quot;}}&gt;{r}&lt;/span&gt;
+                &lt;/div&gt;
+              ))}
+              &lt;button style={{marginTop:16,width:&quot;100%&quot;,background:`${pColor[c.priority]}22`,border:`1px solid ${pColor[c.priority]}44`,color:pColor[c.priority],padding:&quot;9px 0&quot;,borderRadius:8,fontSize:11,fontWeight:700,cursor:&quot;pointer&quot;,letterSpacing:&quot;0.05em&quot;}}&gt;
+                INITIATE EXPANSION REVIEW →
+              &lt;/button&gt;
+            &lt;/div&gt;
+          );
+        })}
+      &lt;/div&gt;
+      &lt;div style={{background:&quot;rgba(255,255,255,0.03)&quot;,border:&quot;1px solid rgba(255,255,255,0.07)&quot;,borderRadius:14,padding:20}}&gt;
+        &lt;div style={{fontSize:13,fontWeight:600,color:&quot;#cbd5e1&quot;,marginBottom:16}}&gt;Expansion Impact Projection&lt;/div&gt;
+        &lt;div style={{display:&quot;flex&quot;,gap:24,flexWrap:&quot;wrap&quot;}}&gt;
+          {[[&quot;New seats if all HIGH expanded&quot;,&quot;+180&quot;,&quot;#ef4444&quot;],[&quot;Families served from waitlist&quot;,&quot;~127&quot;,&quot;#f97316&quot;],[&quot;Projected utilization post-expansion&quot;,&quot;84%&quot;,&quot;#22c55e&quot;],[&quot;Estimated implementation timeline&quot;,&quot;6 months&quot;,&quot;#38bdf8&quot;]].map(([l,v,c])=&gt;(
+            &lt;div key={l} style={{flex:1,minWidth:160}}&gt;
+              &lt;div style={{fontSize:24,fontFamily:&quot;&#x27;DM Serif Display&#x27;,serif&quot;,color:c}}&gt;{v}&lt;/div&gt;
+              &lt;div style={{fontSize:11,color:&quot;#64748b&quot;,marginTop:4}}&gt;{l}&lt;/div&gt;
+            &lt;/div&gt;
+          ))}
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  );
+}
+
+// ── Capacity Tab ──────────────────────────────────────────────────────────────
+function CapacityTab({schools,vacancies}) {
+  const [bFilter,setBFilter] = useState(&quot;All&quot;);
+  const [sort,setSort]       = useState(&quot;utilization&quot;);
+  const [search,setSearch]   = useState(&quot;&quot;);
+  const vacFor = id =&gt; vacancies.filter(v=&gt;v.schoolId===id&amp;&amp;v.status===&quot;open&quot;).reduce((a,v)=&gt;a+v.seats,0);
+  const rows = schools
+    .filter(s=&gt;bFilter===&quot;All&quot;||s.borough===bFilter)
+    .filter(s=&gt;s.name.toLowerCase().includes(search.toLowerCase()))
+    .sort((a,b)=&gt;{
+      if(sort===&quot;utilization&quot;) return pct(b.enrolled,b.capacity)-pct(a.enrolled,a.capacity);
+      if(sort===&quot;waitlist&quot;)    return b.waitlist-a.waitlist;
+      if(sort===&quot;available&quot;)   return (b.capacity-b.enrolled)-(a.capacity-a.enrolled);
+      return a.name.localeCompare(b.name);
+    });
+  return (
+    &lt;div style={{display:&quot;flex&quot;,flexDirection:&quot;column&quot;,gap:16}}&gt;
+      &lt;div style={{display:&quot;flex&quot;,gap:10,flexWrap:&quot;wrap&quot;,alignItems:&quot;center&quot;}}&gt;
+        &lt;input value={search} onChange={e=&gt;setSearch(e.target.value)} placeholder=&quot;Search schools…&quot;
+          style={{flex:1,minWidth:160,background:&quot;rgba(255,255,255,0.05)&quot;,border:&quot;1px solid rgba(255,255,255,0.1)&quot;,borderRadius:8,padding:&quot;8px 14px&quot;,color:&quot;#f1f5f9&quot;,fontSize:12,outline:&quot;none&quot;}}/&gt;
+        &lt;select value={bFilter} onChange={e=&gt;setBFilter(e.target.value)}
+          style={{background:&quot;rgba(255,255,255,0.05)&quot;,border:&quot;1px solid rgba(255,255,255,0.1)&quot;,borderRadius:8,padding:&quot;8px 12px&quot;,color:&quot;#f1f5f9&quot;,fontSize:12,cursor:&quot;pointer&quot;}}&gt;
+          &lt;option value=&quot;All&quot;&gt;All Boroughs&lt;/option&gt;
+          {BOROUGHS.map(b=&gt;&lt;option key={b} value={b}&gt;{b}&lt;/option&gt;)}
+        &lt;/select&gt;
+        &lt;select value={sort} onChange={e=&gt;setSort(e.target.value)}
+          style={{background:&quot;rgba(255,255,255,0.05)&quot;,border:&quot;1px solid rgba(255,255,255,0.1)&quot;,borderRadius:8,padding:&quot;8px 12px&quot;,color:&quot;#f1f5f9&quot;,fontSize:12,cursor:&quot;pointer&quot;}}&gt;
+          &lt;option value=&quot;utilization&quot;&gt;Sort: Utilization&lt;/option&gt;
+          &lt;option value=&quot;waitlist&quot;&gt;Sort: Waitlist&lt;/option&gt;
+          &lt;option value=&quot;available&quot;&gt;Sort: Available&lt;/option&gt;
+          &lt;option value=&quot;name&quot;&gt;Sort: Name&lt;/option&gt;
+        &lt;/select&gt;
+      &lt;/div&gt;
+      &lt;div style={{background:&quot;rgba(255,255,255,0.03)&quot;,border:&quot;1px solid rgba(255,255,255,0.07)&quot;,borderRadius:14,overflow:&quot;hidden&quot;}}&gt;
+        &lt;div style={{overflowX:&quot;auto&quot;}}&gt;
+          &lt;table style={{width:&quot;100%&quot;,borderCollapse:&quot;collapse&quot;,minWidth:700}}&gt;
+            &lt;thead&gt;
+              &lt;tr style={{background:&quot;rgba(255,255,255,0.03)&quot;}}&gt;
+                {[&quot;School&quot;,&quot;Borough&quot;,&quot;Program&quot;,&quot;Type&quot;,&quot;Cap.&quot;,&quot;Enrolled&quot;,&quot;Live Vac.&quot;,&quot;Waitlist&quot;,&quot;Utilization&quot;].map(h=&gt;(
+                  &lt;th key={h} style={{padding:&quot;11px 14px&quot;,textAlign:&quot;left&quot;,fontSize:10,letterSpacing:&quot;0.08em&quot;,textTransform:&quot;uppercase&quot;,color:&quot;#475569&quot;,fontWeight:600,whiteSpace:&quot;nowrap&quot;}}&gt;{h}&lt;/th&gt;
+                ))}
+              &lt;/tr&gt;
+            &lt;/thead&gt;
+            &lt;tbody&gt;
+              {rows.map((s,i)=&gt;{
+                const u=pct(s.enrolled,s.capacity), vs=vacFor(s.id);
+                return (
+                  &lt;tr key={s.id} style={{borderTop:&quot;1px solid rgba(255,255,255,0.04)&quot;,background:i%2===0?&quot;transparent&quot;:&quot;rgba(255,255,255,0.01)&quot;}}&gt;
+                    &lt;td style={{padding:&quot;11px 14px&quot;,fontSize:12,color:&quot;#e2e8f0&quot;,fontWeight:500,maxWidth:200}}&gt;
+                      &lt;div style={{whiteSpace:&quot;nowrap&quot;,overflow:&quot;hidden&quot;,textOverflow:&quot;ellipsis&quot;}}&gt;{s.name}&lt;/div&gt;
+                    &lt;/td&gt;
+                    &lt;td style={{padding:&quot;11px 14px&quot;,fontSize:11,color:&quot;#64748b&quot;,whiteSpace:&quot;nowrap&quot;}}&gt;{s.borough}&lt;/td&gt;
+                    &lt;td style={{padding:&quot;11px 14px&quot;}}&gt;
+                      {s.hasProgram?&lt;Badge label=&quot;Active&quot; color=&quot;#22c55e&quot; bg=&quot;rgba(34,197,94,0.1)&quot;/&gt;:&lt;Badge label=&quot;None&quot; color=&quot;#64748b&quot; bg=&quot;rgba(100,116,139,0.1)&quot;/&gt;}
+                    &lt;/td&gt;
+                    &lt;td style={{padding:&quot;11px 14px&quot;,fontSize:11,color:&quot;#64748b&quot;}}&gt;{s.programType||&quot;—&quot;}&lt;/td&gt;
+                    &lt;td style={{padding:&quot;11px 14px&quot;,fontSize:13,color:&quot;#94a3b8&quot;,textAlign:&quot;center&quot;}}&gt;{s.capacity}&lt;/td&gt;
+                    &lt;td style={{padding:&quot;11px 14px&quot;,fontSize:13,color:&quot;#f1f5f9&quot;,fontWeight:600,textAlign:&quot;center&quot;}}&gt;{s.enrolled}&lt;/td&gt;
+                    &lt;td style={{padding:&quot;11px 14px&quot;,textAlign:&quot;center&quot;}}&gt;
+                      {vs&gt;0
+                        ?&lt;span style={{fontSize:13,color:&quot;#38bdf8&quot;,fontWeight:700,display:&quot;flex&quot;,alignItems:&quot;center&quot;,justifyContent:&quot;center&quot;,gap:4}}&gt;&lt;span className=&quot;pulse-dot&quot; style={{width:6,height:6,borderRadius:&quot;50%&quot;,background:&quot;#38bdf8&quot;,display:&quot;inline-block&quot;}}/&gt;{vs}&lt;/span&gt;
+                        :&lt;span style={{fontSize:12,color:&quot;#334155&quot;}}&gt;—&lt;/span&gt;}
+                    &lt;/td&gt;
+                    &lt;td style={{padding:&quot;11px 14px&quot;,textAlign:&quot;center&quot;}}&gt;
+                      &lt;span style={{fontSize:13,color:s.waitlist&gt;0?&quot;#f97316&quot;:&quot;#475569&quot;,fontWeight:s.waitlist&gt;0?700:400}}&gt;{s.waitlist}&lt;/span&gt;
+                    &lt;/td&gt;
+                    &lt;td style={{padding:&quot;11px 14px&quot;,minWidth:120}}&gt;&lt;UtilBar value={u}/&gt;&lt;/td&gt;
+                  &lt;/tr&gt;
+                );
+              })}
+            &lt;/tbody&gt;
+          &lt;/table&gt;
+        &lt;/div&gt;
+        &lt;div style={{padding:&quot;10px 16px&quot;,borderTop:&quot;1px solid rgba(255,255,255,0.05)&quot;,fontSize:11,color:&quot;#475569&quot;}}&gt;Showing {rows.length} of {schools.length} schools&lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  );
+}
+
+// ── Demand Analytics Tab ──────────────────────────────────────────────────────
+function DemandTab({schools}) {
+  const totalWl = schools.reduce((a,s)=&gt;a+s.waitlist,0);
+  const highD   = schools.filter(s=&gt;s.waitlist&gt;15);
+  const byB = BOROUGHS.map(b=&gt;{
+    const bs=schools.filter(s=&gt;s.borough===b);
+    const wl=bs.reduce((a,s)=&gt;a+s.waitlist,0);
+    const gap=bs.reduce((a,s)=&gt;a+Math.max(0,s.capacity-s.enrolled),0);
+    return{borough:b,waitlist:wl,gap,net:wl-gap};
+  });
+  const maxWl = Math.max(...byB.map(b=&gt;b.waitlist));
+  return (
+    &lt;div style={{display:&quot;flex&quot;,flexDirection:&quot;column&quot;,gap:20}}&gt;
+      &lt;div style={{display:&quot;flex&quot;,gap:16,flexWrap:&quot;wrap&quot;}}&gt;
+        &lt;StatCard label=&quot;Total Waitlisted&quot;    value={totalWl}        sub=&quot;Seeking 3K placement&quot;  accent=&quot;#f97316&quot;/&gt;
+        &lt;StatCard label=&quot;High-Demand Schools&quot; value={highD.length}   sub=&quot;15+ on waitlist&quot;        accent=&quot;#ef4444&quot;/&gt;
+        &lt;StatCard label=&quot;Unmet Demand Gap&quot;    value={`${Math.max(0,totalWl-schools.reduce((a,s)=&gt;a+Math.max(0,s.capacity-s.enrolled),0))} seats`} sub=&quot;Estimated shortfall&quot; accent=&quot;#a78bfa&quot;/&gt;
+        &lt;StatCard label=&quot;Demand Coverage&quot;     value={`${pct(schools.filter(s=&gt;s.hasProgram).length,schools.length)}%`} sub=&quot;Schools with programs&quot; accent=&quot;#22c55e&quot;/&gt;
+      &lt;/div&gt;
+      &lt;div style={{background:&quot;rgba(255,255,255,0.03)&quot;,border:&quot;1px solid rgba(255,255,255,0.07)&quot;,borderRadius:14,padding:20}}&gt;
+        &lt;div style={{fontSize:13,fontWeight:600,color:&quot;#cbd5e1&quot;,marginBottom:20}}&gt;Waitlist Demand by Borough&lt;/div&gt;
+        {byB.sort((a,b)=&gt;b.waitlist-a.waitlist).map(b=&gt;(
+          &lt;div key={b.borough} style={{marginBottom:14}}&gt;
+            &lt;div style={{display:&quot;flex&quot;,justifyContent:&quot;space-between&quot;,marginBottom:6}}&gt;
+              &lt;span style={{fontSize:13,fontWeight:600,color:&quot;#e2e8f0&quot;}}&gt;{b.borough}&lt;/span&gt;
+              &lt;div style={{display:&quot;flex&quot;,gap:12}}&gt;
+                &lt;span style={{fontSize:11,color:&quot;#64748b&quot;}}&gt;{b.gap} available&lt;/span&gt;
+                &lt;span style={{fontSize:13,color:b.waitlist&gt;0?&quot;#f97316&quot;:&quot;#64748b&quot;,fontWeight:700}}&gt;{b.waitlist} waiting&lt;/span&gt;
+              &lt;/div&gt;
+            &lt;/div&gt;
+            &lt;div style={{height:10,background:&quot;rgba(255,255,255,0.05)&quot;,borderRadius:99,overflow:&quot;hidden&quot;}}&gt;
+              &lt;div style={{height:&quot;100%&quot;,width:`${(b.waitlist/maxWl)*100}%`,background:b.net&gt;10?&quot;linear-gradient(90deg,#ef4444,#f97316)&quot;:b.net&gt;0?&quot;linear-gradient(90deg,#f97316,#fbbf24)&quot;:&quot;linear-gradient(90deg,#22c55e,#38bdf8)&quot;,borderRadius:99,transition:&quot;width 0.8s ease&quot;}}/&gt;
+            &lt;/div&gt;
+            {b.net&gt;0&amp;&amp;&lt;div style={{fontSize:11,color:&quot;#f97316&quot;,marginTop:4}}&gt;⚠ {b.net} families exceed available seats — expansion needed&lt;/div&gt;}
+          &lt;/div&gt;
+        ))}
+      &lt;/div&gt;
+      &lt;div style={{display:&quot;grid&quot;,gridTemplateColumns:&quot;repeat(auto-fill,minmax(280px,1fr))&quot;,gap:16}}&gt;
+        &lt;div style={{background:&quot;rgba(255,255,255,0.03)&quot;,border:&quot;1px solid rgba(255,255,255,0.07)&quot;,borderRadius:14,padding:20}}&gt;
+          &lt;div style={{fontSize:13,fontWeight:600,color:&quot;#cbd5e1&quot;,marginBottom:16}}&gt;Top Demand Schools&lt;/div&gt;
+          {schools.filter(s=&gt;s.waitlist&gt;0).sort((a,b)=&gt;b.waitlist-a.waitlist).slice(0,8).map((s,i)=&gt;(
+            &lt;div key={s.id} style={{display:&quot;flex&quot;,alignItems:&quot;center&quot;,gap:12,padding:&quot;7px 0&quot;,borderBottom:&quot;1px solid rgba(255,255,255,0.04)&quot;}}&gt;
+              &lt;span style={{fontSize:11,color:&quot;#475569&quot;,minWidth:16}}&gt;{i+1}&lt;/span&gt;
+              &lt;div style={{flex:1}}&gt;
+                &lt;div style={{fontSize:12,color:&quot;#e2e8f0&quot;,fontWeight:500}}&gt;{s.name.split(&quot; &quot;).slice(0,3).join(&quot; &quot;)}&lt;/div&gt;
+                &lt;div style={{fontSize:10,color:&quot;#475569&quot;}}&gt;{s.borough}&lt;/div&gt;
+              &lt;/div&gt;
+              &lt;div style={{textAlign:&quot;right&quot;}}&gt;
+                &lt;div style={{fontSize:14,fontWeight:700,color:&quot;#f97316&quot;}}&gt;{s.waitlist}&lt;/div&gt;
+                &lt;div style={{fontSize:9,color:&quot;#475569&quot;,letterSpacing:&quot;0.05em&quot;}}&gt;WAITING&lt;/div&gt;
+              &lt;/div&gt;
+            &lt;/div&gt;
+          ))}
+        &lt;/div&gt;
+        &lt;div style={{background:&quot;rgba(255,255,255,0.03)&quot;,border:&quot;1px solid rgba(255,255,255,0.07)&quot;,borderRadius:14,padding:20}}&gt;
+          &lt;div style={{fontSize:13,fontWeight:600,color:&quot;#cbd5e1&quot;,marginBottom:16}}&gt;Income Equity Analysis&lt;/div&gt;
+          {[&quot;low&quot;,&quot;mixed&quot;].map(inc=&gt;{
+            const is=schools.filter(s=&gt;s.income===inc);
+            const iw=is.reduce((a,s)=&gt;a+s.waitlist,0);
+            const ip=is.filter(s=&gt;s.hasProgram).length;
+            const iu=Math.round(is.reduce((a,s)=&gt;a+pct(s.enrolled,s.capacity),0)/is.length);
+            return (
+              &lt;div key={inc} style={{marginBottom:20}}&gt;
+                &lt;div style={{display:&quot;flex&quot;,justifyContent:&quot;space-between&quot;,marginBottom:8}}&gt;
+                  &lt;Badge label={inc===&quot;low&quot;?&quot;Low-Income Areas&quot;:&quot;Mixed-Income Areas&quot;} color={inc===&quot;low&quot;?&quot;#a78bfa&quot;:&quot;#38bdf8&quot;} bg={inc===&quot;low&quot;?&quot;rgba(167,139,250,0.1)&quot;:&quot;rgba(56,189,248,0.1)&quot;}/&gt;
+                  &lt;span style={{fontSize:11,color:&quot;#64748b&quot;}}&gt;{is.length} schools&lt;/span&gt;
+                &lt;/div&gt;
+                {[[&quot;Programs active&quot;,ip,is.length],[&quot;Avg. utilization&quot;,iu,100,&quot;%&quot;],[&quot;Total waitlist&quot;,iw,null]].map(([l,v,t,u])=&gt;(
+                  &lt;div key={l} style={{display:&quot;flex&quot;,justifyContent:&quot;space-between&quot;,padding:&quot;5px 0&quot;,borderBottom:&quot;1px solid rgba(255,255,255,0.04)&quot;}}&gt;
+                    &lt;span style={{fontSize:11,color:&quot;#64748b&quot;}}&gt;{l}&lt;/span&gt;
+                    &lt;span style={{fontSize:12,fontWeight:600,color:&quot;#f1f5f9&quot;}}&gt;{v}{u||&quot;&quot;}{t?` / ${t}`:&quot;&quot;}&lt;/span&gt;
+                  &lt;/div&gt;
+                ))}
+              &lt;/div&gt;
+            );
+          })}
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  );
+}
+
+// ── App ───────────────────────────────────────────────────────────────────────
+const TABS = [
+  {id:&quot;dashboard&quot;,   label:&quot;Overview&quot;,         icon:&quot;◈&quot;},
+  {id:&quot;vacancies&quot;,   label:&quot;Vacancy Feed&quot;,      icon:&quot;⚡&quot;},
+  {id:&quot;reassign&quot;,    label:&quot;Seat Reassignment&quot;, icon:&quot;⟳&quot;},
+  {id:&quot;expansion&quot;,   label:&quot;Expansion Planner&quot;, icon:&quot;⊕&quot;},
+  {id:&quot;capacity&quot;,    label:&quot;School Capacity&quot;,   icon:&quot;▦&quot;},
+  {id:&quot;demand&quot;,      label:&quot;Demand Analytics&quot;,  icon:&quot;◎&quot;},
+];
+
+function App() {
+  const [tab,          setTab]         = useState(&quot;dashboard&quot;);
+  const [vacancies,    setVacancies]   = useState([]);
+  const [liveEnabled,  setLiveEnabled] = useState(true);
+  const [showModal,    setShowModal]   = useState(false);
+  const [bellPulse,    setBellPulse]   = useState(false);
+  const timerRef = useRef(null);
+  const schools  = INITIAL_SCHOOLS;
+
+  const openCount = vacancies.filter(v=&gt;v.status===&quot;open&quot;).length;
+
+  useEffect(()=&gt;{
+    if(!liveEnabled){clearInterval(timerRef.current);return;}
+    timerRef.current = setInterval(()=&gt;{
+      const active = INITIAL_SCHOOLS.filter(s=&gt;s.hasProgram&amp;&amp;s.enrolled&gt;0);
+      const s      = active[Math.floor(Math.random()*active.length)];
+      const v = {id:++vacId,schoolId:s.id,seats:Math.random()&lt;0.7?1:2,reason:VACANCY_REASONS[Math.floor(Math.random()*VACANCY_REASONS.length)],source:&quot;auto&quot;,status:&quot;open&quot;,time:nowTs()};
+      setVacancies(p=&gt;[v,...p.slice(0,29)]);
+      setBellPulse(true); setTimeout(()=&gt;setBellPulse(false),900);
+    },12000);
+    return ()=&gt;clearInterval(timerRef.current);
+  },[liveEnabled]);
+
+  const addManual = ({schoolId,seats,reason}) =&gt; {
+    const v={id:++vacId,schoolId,seats,reason,source:&quot;manual&quot;,status:&quot;open&quot;,time:nowTs()};
+    setVacancies(p=&gt;[v,...p]);
+    setBellPulse(true); setTimeout(()=&gt;setBellPulse(false),900);
+  };
+  const dismiss = id =&gt; setVacancies(p=&gt;p.filter(v=&gt;v.id!==id));
+  const fill    = id =&gt; setVacancies(p=&gt;p.map(v=&gt;v.id===id?{...v,status:&quot;filled&quot;,time:nowTs()}:v));
+
+  return (
+    &lt;div style={{minHeight:&quot;100vh&quot;,background:&quot;#080c14&quot;,color:&quot;#f1f5f9&quot;,fontFamily:&quot;&#x27;DM Sans&#x27;,sans-serif&quot;}}&gt;
+
+      {/* Header */}
+      &lt;div style={{borderBottom:&quot;1px solid rgba(255,255,255,0.06)&quot;,background:&quot;rgba(8,12,20,0.97)&quot;,backdropFilter:&quot;blur(20px)&quot;,position:&quot;sticky&quot;,top:0,zIndex:100}}&gt;
+        &lt;div style={{maxWidth:1280,margin:&quot;0 auto&quot;,padding:&quot;0 20px&quot;,display:&quot;flex&quot;,alignItems:&quot;center&quot;,justifyContent:&quot;space-between&quot;,height:62}}&gt;
+          &lt;div style={{display:&quot;flex&quot;,alignItems:&quot;center&quot;,gap:12}}&gt;
+            &lt;div style={{width:32,height:32,borderRadius:8,background:&quot;linear-gradient(135deg,#38bdf8,#818cf8)&quot;,display:&quot;flex&quot;,alignItems:&quot;center&quot;,justifyContent:&quot;center&quot;,fontSize:16,fontWeight:900,color:&quot;#fff&quot;,flexShrink:0}}&gt;3&lt;/div&gt;
+            &lt;div&gt;
+              &lt;div style={{fontSize:15,fontWeight:700,color:&quot;#f1f5f9&quot;,letterSpacing:&quot;-0.02em&quot;}}&gt;NYC 3K Optimizer&lt;/div&gt;
+              &lt;div style={{fontSize:10,color:&quot;#475569&quot;,letterSpacing:&quot;0.08em&quot;,textTransform:&quot;uppercase&quot;}}&gt;Seat Management &amp;amp; Expansion Platform&lt;/div&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+          &lt;div style={{display:&quot;flex&quot;,alignItems:&quot;center&quot;,gap:8,flexWrap:&quot;wrap&quot;,justifyContent:&quot;flex-end&quot;}}&gt;
+            {/* Bell */}
+            &lt;button onClick={()=&gt;setTab(&quot;vacancies&quot;)} className={bellPulse?&quot;bell-ring&quot;:&quot;&quot;} style={{position:&quot;relative&quot;,background:&quot;rgba(255,255,255,0.05)&quot;,border:&quot;1px solid rgba(255,255,255,0.1)&quot;,borderRadius:8,padding:&quot;6px 12px&quot;,cursor:&quot;pointer&quot;,display:&quot;flex&quot;,alignItems:&quot;center&quot;,gap:6,color:&quot;#94a3b8&quot;,fontSize:13}}&gt;
+              🔔 &lt;span style={{fontSize:11}}&gt;Vacancies&lt;/span&gt;
+              {openCount&gt;0&amp;&amp;&lt;span style={{position:&quot;absolute&quot;,top:-5,right:-5,background:&quot;#ef4444&quot;,color:&quot;#fff&quot;,borderRadius:99,fontSize:10,fontWeight:800,minWidth:18,height:18,display:&quot;flex&quot;,alignItems:&quot;center&quot;,justifyContent:&quot;center&quot;,padding:&quot;0 4px&quot;,boxShadow:&quot;0 0 8px rgba(239,68,68,0.6)&quot;}}&gt;{openCount}&lt;/span&gt;}
+            &lt;/button&gt;
+            &lt;button onClick={()=&gt;setShowModal(true)} style={{background:&quot;rgba(167,139,250,0.12)&quot;,border:&quot;1px solid rgba(167,139,250,0.3)&quot;,borderRadius:8,padding:&quot;6px 14px&quot;,cursor:&quot;pointer&quot;,color:&quot;#a78bfa&quot;,fontSize:11,fontWeight:700}}&gt;+ Log Vacancy&lt;/button&gt;
+            &lt;div style={{display:&quot;flex&quot;,alignItems:&quot;center&quot;,gap:6}}&gt;
+              &lt;div className={liveEnabled?&quot;pulse-dot&quot;:&quot;&quot;} style={{width:8,height:8,borderRadius:&quot;50%&quot;,background:liveEnabled?&quot;#22c55e&quot;:&quot;#475569&quot;,boxShadow:liveEnabled?&quot;0 0 8px #22c55e&quot;:&quot;none&quot;}}/&gt;
+              &lt;span style={{fontSize:11,color:&quot;#64748b&quot;}}&gt;Live · SY 2025–26&lt;/span&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+
+      {/* Nav */}
+      &lt;div style={{borderBottom:&quot;1px solid rgba(255,255,255,0.05)&quot;,background:&quot;rgba(8,12,20,0.7)&quot;,overflowX:&quot;auto&quot;}}&gt;
+        &lt;div style={{maxWidth:1280,margin:&quot;0 auto&quot;,padding:&quot;0 20px&quot;,display:&quot;flex&quot;,gap:2,minWidth:&quot;max-content&quot;}}&gt;
+          {TABS.map(t=&gt;(
+            &lt;button key={t.id} onClick={()=&gt;setTab(t.id)}
+              style={{padding:&quot;14px 16px&quot;,background:&quot;transparent&quot;,border:&quot;none&quot;,borderBottom:`2px solid ${tab===t.id?&quot;#38bdf8&quot;:&quot;transparent&quot;}`,color:tab===t.id?&quot;#38bdf8&quot;:&quot;#475569&quot;,fontSize:12,fontWeight:tab===t.id?700:500,cursor:&quot;pointer&quot;,display:&quot;flex&quot;,alignItems:&quot;center&quot;,gap:6,transition:&quot;all 0.2s&quot;,letterSpacing:&quot;0.02em&quot;,whiteSpace:&quot;nowrap&quot;,position:&quot;relative&quot;}}&gt;
+              &lt;span style={{fontSize:14}}&gt;{t.icon}&lt;/span&gt;{t.label}
+              {t.id===&quot;vacancies&quot;&amp;&amp;openCount&gt;0&amp;&amp;&lt;span style={{background:&quot;#ef4444&quot;,color:&quot;#fff&quot;,borderRadius:99,fontSize:9,fontWeight:800,padding:&quot;1px 5px&quot;,marginLeft:2}}&gt;{openCount}&lt;/span&gt;}
+            &lt;/button&gt;
+          ))}
+        &lt;/div&gt;
+      &lt;/div&gt;
+
+      {/* Content */}
+      &lt;div style={{maxWidth:1280,margin:&quot;0 auto&quot;,padding:&quot;28px 20px&quot;}} className=&quot;tab-content&quot;&gt;
+        {tab===&quot;dashboard&quot; &amp;&amp; &lt;DashboardTab    schools={schools} vacancies={vacancies}/&gt;}
+        {tab===&quot;vacancies&quot; &amp;&amp; &lt;VacancyTab      schools={schools} vacancies={vacancies} onDismiss={dismiss} onFill={fill} liveEnabled={liveEnabled} setLiveEnabled={setLiveEnabled}/&gt;}
+        {tab===&quot;reassign&quot;  &amp;&amp; &lt;ReassignmentTab schools={schools} vacancies={vacancies} onFill={fill}/&gt;}
+        {tab===&quot;expansion&quot; &amp;&amp; &lt;ExpansionTab    schools={schools}/&gt;}
+        {tab===&quot;capacity&quot;  &amp;&amp; &lt;CapacityTab     schools={schools} vacancies={vacancies}/&gt;}
+        {tab===&quot;demand&quot;    &amp;&amp; &lt;DemandTab       schools={schools}/&gt;}
+      &lt;/div&gt;
+
+      {showModal &amp;&amp; &lt;ManualVacancyModal schools={schools} onSubmit={addManual} onClose={()=&gt;setShowModal(false)}/&gt;}
+    &lt;/div&gt;
+  );
+}
+
+ReactDOM.createRoot(document.getElementById(&quot;root&quot;)).render(&lt;App/&gt;);
+&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+    </div>
+  </main>
+  <script>
+    function copyCode() {
+      const code = document.getElementById('sourceCode').textContent;
+      navigator.clipboard.writeText(code).then(() => {
+        const btn = document.getElementById('copyBtn');
+        btn.textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = 'Copy Code';
+          btn.classList.remove('copied');
+        }, 2000);
+      }).catch(() => {
+        const ta = document.createElement('textarea');
+        ta.value = code;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        const btn = document.getElementById('copyBtn');
+        btn.textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = 'Copy Code';
+          btn.classList.remove('copied');
+        }, 2000);
+      });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>NYC 3K Optimizer — SY 2025–26</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #080c14; color: #f1f5f9; font-family: 'DM Sans', sans-serif; }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: rgba(255,255,255,0.03); }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 99px; }
+  select option { background: #0f1623; color: #f1f5f9; }
+  @keyframes pulse    { 0%,100%{opacity:1} 50%{opacity:0.35} }
+  @keyframes vacPulse { 0%{box-shadow:0 0 0 0 rgba(56,189,248,0.45)} 70%{box-shadow:0 0 0 10px rgba(56,189,248,0)} 100%{box-shadow:0 0 0 0 rgba(56,189,248,0)} }
+  @keyframes bellRing { 0%,100%{transform:rotate(0deg)} 25%{transform:rotate(-15deg)} 75%{transform:rotate(15deg)} }
+  @keyframes slideIn  { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:translateY(0)} }
+  .pulse-dot  { animation: pulse 1.5s infinite; }
+  .bell-ring  { animation: bellRing 0.5s ease; }
+  .slide-in   { animation: slideIn 0.25s ease; }
+  .tab-content { animation: slideIn 0.2s ease; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
+
+// ── Data ─────────────────────────────────────────────────────────────────────
+const BOROUGHS = ["Manhattan","Brooklyn","Queens","Bronx","Staten Island"];
+
+const INITIAL_SCHOOLS = [
+  {id:1,  name:"PS 58 The Carroll School",        borough:"Brooklyn",     district:15, capacity:40, enrolled:38, waitlist:14, hasProgram:true,  programType:"Full-Day",  income:"low",   score:87},
+  {id:2,  name:"PS 321 William Penn",              borough:"Brooklyn",     district:15, capacity:36, enrolled:36, waitlist:22, hasProgram:true,  programType:"Half-Day",  income:"mixed", score:91},
+  {id:3,  name:"PS 261 Philip Livingston",         borough:"Brooklyn",     district:15, capacity:32, enrolled:28, waitlist:6,  hasProgram:true,  programType:"Full-Day",  income:"mixed", score:74},
+  {id:4,  name:"PS 107 John W. Kimball",           borough:"Brooklyn",     district:15, capacity:40, enrolled:32, waitlist:0,  hasProgram:false, programType:null,        income:"mixed", score:62},
+  {id:5,  name:"PS 10 Magnet School",              borough:"Brooklyn",     district:20, capacity:44, enrolled:44, waitlist:31, hasProgram:true,  programType:"Full-Day",  income:"low",   score:95},
+  {id:6,  name:"PS 503 The School of Discovery",   borough:"Brooklyn",     district:20, capacity:36, enrolled:30, waitlist:4,  hasProgram:true,  programType:"Half-Day",  income:"mixed", score:69},
+  {id:7,  name:"PS 230 Doris L. Cohen",            borough:"Brooklyn",     district:20, capacity:32, enrolled:18, waitlist:0,  hasProgram:false, programType:null,        income:"mixed", score:55},
+  {id:8,  name:"PS 9 Teunis G. Bergen",            borough:"Brooklyn",     district:21, capacity:40, enrolled:40, waitlist:18, hasProgram:true,  programType:"Full-Day",  income:"low",   score:88},
+  {id:9,  name:"PS 253 Magnet School of Math",     borough:"Queens",       district:27, capacity:36, enrolled:34, waitlist:11, hasProgram:true,  programType:"Full-Day",  income:"low",   score:82},
+  {id:10, name:"PS 147 Isaac Remsen",              borough:"Queens",       district:27, capacity:32, enrolled:20, waitlist:0,  hasProgram:false, programType:null,        income:"mixed", score:58},
+  {id:11, name:"PS 64 Joseph P. Addabbo",          borough:"Queens",       district:27, capacity:40, enrolled:38, waitlist:9,  hasProgram:true,  programType:"Half-Day",  income:"low",   score:79},
+  {id:12, name:"PS 146 Howard Beach",              borough:"Queens",       district:27, capacity:28, enrolled:14, waitlist:0,  hasProgram:false, programType:null,        income:"mixed", score:47},
+  {id:13, name:"PS 48 William Wordsworth",         borough:"Bronx",        district:10, capacity:40, enrolled:40, waitlist:26, hasProgram:true,  programType:"Full-Day",  income:"low",   score:93},
+  {id:14, name:"PS 78 Theodore Roosevelt",         borough:"Bronx",        district:10, capacity:36, enrolled:28, waitlist:3,  hasProgram:true,  programType:"Half-Day",  income:"low",   score:71},
+  {id:15, name:"PS 11 Kathryn Phelan",             borough:"Bronx",        district:10, capacity:32, enrolled:16, waitlist:0,  hasProgram:false, programType:null,        income:"mixed", score:53},
+  {id:16, name:"PS 55 Benjamin Franklin",          borough:"Bronx",        district:11, capacity:40, enrolled:40, waitlist:19, hasProgram:true,  programType:"Full-Day",  income:"low",   score:89},
+  {id:17, name:"PS 75 Emily Dickinson",            borough:"Manhattan",    district:3,  capacity:36, enrolled:36, waitlist:27, hasProgram:true,  programType:"Full-Day",  income:"mixed", score:94},
+  {id:18, name:"PS 87 William Sherman",            borough:"Manhattan",    district:3,  capacity:32, enrolled:30, waitlist:12, hasProgram:true,  programType:"Half-Day",  income:"mixed", score:80},
+  {id:19, name:"PS 163 Alfred E. Smith",           borough:"Manhattan",    district:3,  capacity:28, enrolled:16, waitlist:0,  hasProgram:false, programType:null,        income:"mixed", score:61},
+  {id:20, name:"PS 84 Lillian Weber",              borough:"Manhattan",    district:3,  capacity:36, enrolled:22, waitlist:0,  hasProgram:false, programType:null,        income:"low",   score:66},
+  {id:21, name:"PS 200 The Benson School",         borough:"Staten Island",district:31, capacity:32, enrolled:24, waitlist:2,  hasProgram:true,  programType:"Half-Day",  income:"mixed", score:68},
+  {id:22, name:"PS 44 Andrew Hardie",              borough:"Staten Island",district:31, capacity:28, enrolled:14, waitlist:0,  hasProgram:false, programType:null,        income:"mixed", score:44},
+];
+
+const INITIAL_FAMILIES = [
+  {id:"W001",name:"Rivera Family",  child:"Sofia R.", currentSchool:5,  preferredSchools:[5,1,13],  income:"low",   distance:0.4, priority:"high",   status:"unplaced"},
+  {id:"W002",name:"Chen Family",    child:"Lucas C.", currentSchool:17, preferredSchools:[17,18,19], income:"mixed", distance:0.2, priority:"medium", status:"unplaced"},
+  {id:"W003",name:"Johnson Family", child:"Amara J.", currentSchool:13, preferredSchools:[13,16,14], income:"low",   distance:0.6, priority:"high",   status:"unplaced"},
+  {id:"W004",name:"Patel Family",   child:"Aarav P.", currentSchool:2,  preferredSchools:[2,1,3],   income:"mixed", distance:0.3, priority:"medium", status:"unplaced"},
+  {id:"W005",name:"Williams Family",child:"Zoe W.",   currentSchool:8,  preferredSchools:[8,9,11],  income:"low",   distance:0.5, priority:"high",   status:"unplaced"},
+  {id:"W006",name:"Garcia Family",  child:"Marco G.", currentSchool:17, preferredSchools:[17,20,18], income:"low",   distance:0.8, priority:"high",   status:"unplaced"},
+  {id:"W007",name:"Thompson Family",child:"Ella T.",  currentSchool:5,  preferredSchools:[5,6,7],   income:"mixed", distance:1.1, priority:"medium", status:"unplaced"},
+  {id:"W008",name:"Martinez Family",child:"Diego M.", currentSchool:13, preferredSchools:[13,15,14], income:"low",   distance:0.7, priority:"high",   status:"unplaced"},
+];
+
+const EXPANSION_CANDIDATES = [
+  {id:4,  score:88, reasons:["8 available seats","High demand neighborhood","Proximity to waitlisted families"], priority:"HIGH"},
+  {id:7,  score:82, reasons:["14 available seats","Low-income area underserved","No nearby alternatives"],       priority:"HIGH"},
+  {id:15, score:79, reasons:["16 available seats","Bronx equity gap","Strong principal interest"],               priority:"MEDIUM"},
+  {id:10, score:74, reasons:["12 available seats","Queens expansion target","Transit accessible"],               priority:"MEDIUM"},
+  {id:19, score:71, reasons:["12 available seats","Manhattan coverage gap","Community demand"],                  priority:"MEDIUM"},
+  {id:20, score:68, reasons:["14 available seats","Low-income priority zone","Underutilized building"],          priority:"LOW"},
+];
+
+const VACANCY_REASONS = [
+  "Family relocated out of district","Child transferred to private school","Medical withdrawal",
+  "Family moved boroughs","Program type change requested","Sibling priority reassignment",
+  "Income re-verification pending","Parent work schedule conflict",
+];
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+const pct    = (n,d) => d===0?0:Math.round((n/d)*100);
+const uColor = p => p>=95?"#ef4444":p>=80?"#f97316":p>=60?"#22c55e":"#94a3b8";
+const pColor = {HIGH:"#ef4444",MEDIUM:"#f97316",LOW:"#22c55e"};
+const pBg    = {HIGH:"rgba(239,68,68,0.1)",MEDIUM:"rgba(249,115,22,0.1)",LOW:"rgba(34,197,94,0.1)"};
+const nowTs  = () => new Date().toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
+let vacId = 1000;
+
+// ── Shared UI ─────────────────────────────────────────────────────────────────
+function StatCard({label,value,sub,accent}) {
+  return (
+    <div style={{background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:12,padding:"20px 24px",flex:1,minWidth:140}}>
+      <div style={{fontSize:11,letterSpacing:"0.1em",textTransform:"uppercase",color:"#64748b",marginBottom:8}}>{label}</div>
+      <div style={{fontSize:32,fontFamily:"'DM Serif Display',serif",color:accent||"#f8fafc",lineHeight:1}}>{value}</div>
+      {sub && <div style={{fontSize:12,color:"#64748b",marginTop:6}}>{sub}</div>}
+    </div>
+  );
+}
+
+function UtilBar({value}) {
+  const color = uColor(value);
+  return (
+    <div style={{display:"flex",alignItems:"center",gap:8}}>
+      <div style={{flex:1,height:6,background:"rgba(255,255,255,0.06)",borderRadius:99}}>
+        <div style={{width:`${value}%`,height:"100%",background:color,borderRadius:99,transition:"width 0.6s ease"}}/>
+      </div>
+      <span style={{fontSize:11,color,minWidth:32,textAlign:"right"}}>{value}%</span>
+    </div>
+  );
+}
+
+function Badge({label,color,bg}) {
+  return (
+    <span style={{fontSize:10,fontWeight:700,letterSpacing:"0.08em",textTransform:"uppercase",padding:"3px 8px",borderRadius:99,background:bg||"rgba(255,255,255,0.08)",color:color||"#94a3b8",whiteSpace:"nowrap"}}>
+      {label}
+    </span>
+  );
+}
+
+// ── Manual Vacancy Modal ──────────────────────────────────────────────────────
+function ManualVacancyModal({schools,onSubmit,onClose}) {
+  const [schoolId,setSchoolId] = useState("");
+  const [seats,setSeats]       = useState(1);
+  const [reason,setReason]     = useState(VACANCY_REASONS[0]);
+  const active = schools.filter(s=>s.hasProgram);
+  const submit = () => { if(!schoolId) return; onSubmit({schoolId:parseInt(schoolId),seats,reason}); onClose(); };
+  return (
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.75)",zIndex:999,display:"flex",alignItems:"center",justifyContent:"center"}} onClick={onClose}>
+      <div style={{background:"#0f1623",border:"1px solid rgba(255,255,255,0.12)",borderRadius:16,padding:28,width:440,maxWidth:"92vw"}} onClick={e=>e.stopPropagation()}>
+        <div style={{fontSize:16,fontWeight:700,color:"#f1f5f9",marginBottom:4}}>Report Vacancy</div>
+        <div style={{fontSize:12,color:"#64748b",marginBottom:20}}>Manually log a seat that has opened up.</div>
+        <div style={{display:"flex",flexDirection:"column",gap:14}}>
+          <div>
+            <label style={{fontSize:11,color:"#64748b",letterSpacing:"0.06em",textTransform:"uppercase",display:"block",marginBottom:6}}>School</label>
+            <select value={schoolId} onChange={e=>setSchoolId(e.target.value)}
+              style={{width:"100%",background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:8,padding:"9px 12px",color:schoolId?"#f1f5f9":"#64748b",fontSize:12}}>
+              <option value="">Select a school…</option>
+              {active.map(s=><option key={s.id} value={s.id}>{s.name}</option>)}
+            </select>
+          </div>
+          <div>
+            <label style={{fontSize:11,color:"#64748b",letterSpacing:"0.06em",textTransform:"uppercase",display:"block",marginBottom:6}}>Seats Opening</label>
+            <div style={{display:"flex",gap:8}}>
+              {[1,2,3,4].map(n=>(
+                <button key={n} onClick={()=>setSeats(n)}
+                  style={{flex:1,padding:"9px 0",borderRadius:8,border:`1px solid ${seats===n?"rgba(56,189,248,0.5)":"rgba(255,255,255,0.08)"}`,background:seats===n?"rgba(56,189,248,0.1)":"rgba(255,255,255,0.03)",color:seats===n?"#38bdf8":"#64748b",fontSize:14,fontWeight:700,cursor:"pointer"}}>
+                  {n}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <label style={{fontSize:11,color:"#64748b",letterSpacing:"0.06em",textTransform:"uppercase",display:"block",marginBottom:6}}>Reason</label>
+            <select value={reason} onChange={e=>setReason(e.target.value)}
+              style={{width:"100%",background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:8,padding:"9px 12px",color:"#f1f5f9",fontSize:12}}>
+              {VACANCY_REASONS.map(r=><option key={r} value={r}>{r}</option>)}
+            </select>
+          </div>
+        </div>
+        <div style={{display:"flex",gap:10,marginTop:22}}>
+          <button onClick={onClose} style={{flex:1,padding:"10px 0",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:8,color:"#64748b",fontSize:12,cursor:"pointer"}}>Cancel</button>
+          <button onClick={submit} disabled={!schoolId}
+            style={{flex:2,padding:"10px 0",background:schoolId?"linear-gradient(135deg,#38bdf8,#818cf8)":"rgba(255,255,255,0.06)",border:"none",borderRadius:8,color:schoolId?"#fff":"#475569",fontSize:12,fontWeight:700,cursor:schoolId?"pointer":"not-allowed"}}>
+            Log Vacancy
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Dashboard Tab ─────────────────────────────────────────────────────────────
+function DashboardTab({schools,vacancies}) {
+  const total    = schools.reduce((a,s)=>a+s.capacity,0);
+  const enrolled = schools.reduce((a,s)=>a+s.enrolled,0);
+  const waitlist = schools.reduce((a,s)=>a+s.waitlist,0);
+  const programs = schools.filter(s=>s.hasProgram).length;
+  const openVac  = vacancies.filter(v=>v.status==="open").reduce((a,v)=>a+v.seats,0);
+  const byBorough = BOROUGHS.map(b=>{
+    const bs=schools.filter(s=>s.borough===b);
+    return {borough:b,capacity:bs.reduce((a,s)=>a+s.capacity,0),enrolled:bs.reduce((a,s)=>a+s.enrolled,0),waitlist:bs.reduce((a,s)=>a+s.waitlist,0),programs:bs.filter(s=>s.hasProgram).length};
+  });
+  return (
+    <div style={{display:"flex",flexDirection:"column",gap:24}}>
+      <div style={{display:"flex",gap:16,flexWrap:"wrap"}}>
+        <StatCard label="Total 3K Seats"      value={total.toLocaleString()}    sub="Across all programs"          accent="#38bdf8"/>
+        <StatCard label="Currently Enrolled"  value={enrolled.toLocaleString()} sub={`${pct(enrolled,total)}% utilization`} accent="#a78bfa"/>
+        <StatCard label="Waitlisted Families" value={waitlist.toLocaleString()} sub="Seeking placement"             accent="#f97316"/>
+        <StatCard label="Active Programs"     value={programs}                  sub={`of ${schools.length} schools`} accent="#22c55e"/>
+        <StatCard label="Live Vacancies"      value={openVac}                   sub="Open seats right now"          accent="#38bdf8"/>
+      </div>
+      {openVac>0 && (
+        <div style={{background:"rgba(56,189,248,0.05)",border:"1px solid rgba(56,189,248,0.25)",borderRadius:12,padding:"14px 18px",display:"flex",alignItems:"center",gap:12}}>
+          <span style={{fontSize:20}}>⚡</span>
+          <div>
+            <div style={{fontSize:13,fontWeight:700,color:"#38bdf8"}}>{openVac} seat{openVac>1?"s":""} available right now</div>
+            <div style={{fontSize:11,color:"#64748b",marginTop:2}}>New vacancies reported. Head to Vacancy Feed or Seat Reassignment to fill them.</div>
+          </div>
+        </div>
+      )}
+      <div style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:14,overflow:"hidden"}}>
+        <div style={{padding:"16px 20px",borderBottom:"1px solid rgba(255,255,255,0.06)",fontSize:13,fontWeight:600,color:"#cbd5e1"}}>Borough Snapshot</div>
+        <div style={{overflowX:"auto"}}>
+          <table style={{width:"100%",borderCollapse:"collapse",minWidth:600}}>
+            <thead>
+              <tr style={{background:"rgba(255,255,255,0.02)"}}>
+                {["Borough","Programs","Capacity","Enrolled","Waitlist","Utilization"].map(h=>(
+                  <th key={h} style={{padding:"10px 16px",textAlign:"left",fontSize:11,letterSpacing:"0.08em",textTransform:"uppercase",color:"#475569",fontWeight:600}}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {byBorough.map((b,i)=>(
+                <tr key={b.borough} style={{borderTop:"1px solid rgba(255,255,255,0.04)",background:i%2===0?"transparent":"rgba(255,255,255,0.01)"}}>
+                  <td style={{padding:"12px 16px",fontWeight:600,color:"#f1f5f9",fontSize:13}}>{b.borough}</td>
+                  <td style={{padding:"12px 16px",color:"#94a3b8",fontSize:13}}>{b.programs}</td>
+                  <td style={{padding:"12px 16px",color:"#94a3b8",fontSize:13}}>{b.capacity}</td>
+                  <td style={{padding:"12px 16px",color:"#94a3b8",fontSize:13}}>{b.enrolled}</td>
+                  <td style={{padding:"12px 16px",fontSize:13}}><span style={{color:b.waitlist>0?"#f97316":"#64748b"}}>{b.waitlist}</span></td>
+                  <td style={{padding:"12px 16px",minWidth:140}}><UtilBar value={pct(b.enrolled,b.capacity)}/></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
+        <div style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:14,padding:20}}>
+          <div style={{fontSize:13,fontWeight:600,color:"#cbd5e1",marginBottom:16}}>Over-Subscribed Schools</div>
+          {schools.filter(s=>s.waitlist>10).sort((a,b)=>b.waitlist-a.waitlist).slice(0,5).map(s=>(
+            <div key={s.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderBottom:"1px solid rgba(255,255,255,0.04)"}}>
+              <div>
+                <div style={{fontSize:12,color:"#e2e8f0",fontWeight:500}}>{s.name.split(" ").slice(0,3).join(" ")}</div>
+                <div style={{fontSize:11,color:"#64748b"}}>{s.borough}</div>
+              </div>
+              <Badge label={`+${s.waitlist} waitlist`} color="#f97316" bg="rgba(249,115,22,0.1)"/>
+            </div>
+          ))}
+        </div>
+        <div style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:14,padding:20}}>
+          <div style={{fontSize:13,fontWeight:600,color:"#cbd5e1",marginBottom:16}}>Available Capacity</div>
+          {schools.filter(s=>s.enrolled<s.capacity*0.85).sort((a,b)=>(b.capacity-b.enrolled)-(a.capacity-a.enrolled)).slice(0,5).map(s=>(
+            <div key={s.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderBottom:"1px solid rgba(255,255,255,0.04)"}}>
+              <div>
+                <div style={{fontSize:12,color:"#e2e8f0",fontWeight:500}}>{s.name.split(" ").slice(0,3).join(" ")}</div>
+                <div style={{fontSize:11,color:"#64748b"}}>{s.borough}</div>
+              </div>
+              <Badge label={`${s.capacity-s.enrolled} open`} color="#22c55e" bg="rgba(34,197,94,0.1)"/>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Vacancy Feed Tab ──────────────────────────────────────────────────────────
+function VacancyTab({vacancies,schools,onDismiss,onFill,liveEnabled,setLiveEnabled}) {
+  const open   = vacancies.filter(v=>v.status==="open");
+  const filled = vacancies.filter(v=>v.status==="filled");
+  const sName  = id => { const s=schools.find(sc=>sc.id===id); return s?s.name:"Unknown"; };
+  return (
+    <div style={{display:"flex",flexDirection:"column",gap:20}}>
+      <div style={{display:"flex",gap:16,flexWrap:"wrap"}}>
+        <StatCard label="Open Vacancies"   value={open.length}   sub={`${open.reduce((a,v)=>a+v.seats,0)} total seats`} accent="#38bdf8"/>
+        <StatCard label="Filled Today"     value={filled.length} sub="Successfully placed"   accent="#22c55e"/>
+        <StatCard label="Via Live Feed"    value={vacancies.filter(v=>v.source==="auto").length}   sub="Auto-detected"   accent="#a78bfa"/>
+        <StatCard label="Via Manual Entry" value={vacancies.filter(v=>v.source==="manual").length} sub="Staff reported"   accent="#f97316"/>
+      </div>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+        <div style={{fontSize:15,fontWeight:700,color:"#f1f5f9"}}>Live Vacancy Feed</div>
+        <div style={{display:"flex",alignItems:"center",gap:10}}>
+          <span style={{fontSize:12,color:"#64748b"}}>Simulated feed:</span>
+          <button onClick={()=>setLiveEnabled(p=>!p)}
+            style={{background:liveEnabled?"rgba(34,197,94,0.15)":"rgba(255,255,255,0.06)",border:`1px solid ${liveEnabled?"rgba(34,197,94,0.4)":"rgba(255,255,255,0.1)"}`,borderRadius:99,padding:"5px 16px",color:liveEnabled?"#22c55e":"#64748b",fontSize:11,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",gap:6}}>
+            {liveEnabled && <span className="pulse-dot" style={{width:7,height:7,borderRadius:"50%",background:"#22c55e",display:"inline-block"}}/>}
+            {liveEnabled?"ON":"OFF"}
+          </button>
+        </div>
+      </div>
+      {open.length===0 && (
+        <div style={{padding:32,textAlign:"center",color:"#475569",fontSize:13,background:"rgba(255,255,255,0.02)",borderRadius:12,border:"1px solid rgba(255,255,255,0.05)"}}>
+          No open vacancies right now. Enable the live feed or log one manually.
+        </div>
+      )}
+      {open.map(v=>(
+        <div key={v.id} className="slide-in" style={{background:"rgba(56,189,248,0.05)",border:"1px solid rgba(56,189,248,0.22)",borderRadius:12,padding:"16px 18px"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+            <div style={{flex:1}}>
+              <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:4,flexWrap:"wrap"}}>
+                <span className="pulse-dot" style={{width:9,height:9,borderRadius:"50%",background:"#38bdf8",display:"inline-block",boxShadow:"0 0 8px #38bdf8"}}/>
+                <span style={{fontSize:14,fontWeight:700,color:"#f1f5f9"}}>{sName(v.schoolId).split(" ").slice(0,5).join(" ")}</span>
+                <Badge label={v.source==="auto"?"Live Feed":"Manual"} color={v.source==="auto"?"#38bdf8":"#a78bfa"} bg={v.source==="auto"?"rgba(56,189,248,0.1)":"rgba(167,139,250,0.1)"}/>
+              </div>
+              <div style={{fontSize:12,color:"#64748b",marginLeft:19}}>{v.reason}</div>
+              <div style={{fontSize:11,color:"#475569",marginLeft:19,marginTop:2}}>Reported at {v.time}</div>
+            </div>
+            <div style={{textAlign:"right",marginLeft:16}}>
+              <div style={{fontSize:32,fontFamily:"'DM Serif Display',serif",color:"#38bdf8",lineHeight:1}}>+{v.seats}</div>
+              <div style={{fontSize:10,color:"#64748b",letterSpacing:"0.06em"}}>SEAT{v.seats>1?"S":""}</div>
+            </div>
+          </div>
+          <div style={{display:"flex",gap:10,marginTop:14}}>
+            <button onClick={()=>onFill(v.id)} style={{background:"rgba(34,197,94,0.15)",border:"1px solid rgba(34,197,94,0.3)",color:"#22c55e",padding:"7px 18px",borderRadius:7,fontSize:12,fontWeight:700,cursor:"pointer"}}>✓ Fill from Waitlist</button>
+            <button onClick={()=>onDismiss(v.id)} style={{background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.08)",color:"#64748b",padding:"7px 14px",borderRadius:7,fontSize:12,cursor:"pointer"}}>Dismiss</button>
+          </div>
+        </div>
+      ))}
+      {filled.length>0 && (
+        <div style={{background:"rgba(255,255,255,0.02)",border:"1px solid rgba(255,255,255,0.06)",borderRadius:12,padding:16}}>
+          <div style={{fontSize:12,fontWeight:600,color:"#475569",marginBottom:12,letterSpacing:"0.06em",textTransform:"uppercase"}}>Filled Vacancies</div>
+          {filled.map(v=>(
+            <div key={v.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderBottom:"1px solid rgba(255,255,255,0.04)"}}>
+              <div>
+                <span style={{fontSize:12,color:"#94a3b8"}}>{sName(v.schoolId).split(" ").slice(0,4).join(" ")}</span>
+                <span style={{fontSize:11,color:"#475569",marginLeft:10}}>{v.reason}</span>
+              </div>
+              <div style={{display:"flex",alignItems:"center",gap:10}}>
+                <span style={{fontSize:11,color:"#475569"}}>{v.time}</span>
+                <Badge label="Filled ✓" color="#22c55e" bg="rgba(34,197,94,0.1)"/>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Seat Reassignment Tab ─────────────────────────────────────────────────────
+function ReassignmentTab({schools,vacancies,onFill}) {
+  const [families,setFamilies] = useState(INITIAL_FAMILIES);
+  const [placements,setPlacements] = useState({});
+  const [selected,setSelected] = useState(null);
+
+  const effectiveAvail = s => {
+    const vacSeats = vacancies.filter(v=>v.schoolId===s.id&&v.status==="open").reduce((a,v)=>a+v.seats,0);
+    const placed   = Object.values(placements).filter(p=>p.schoolId===s.id).length;
+    return Math.max(0, s.capacity - s.enrolled + vacSeats - placed);
+  };
+
+  const getSchool = id => schools.find(s=>s.id===id);
+
+  const suggest = fam => {
+    for(const id of fam.preferredSchools){ const s=getSchool(id); if(s&&effectiveAvail(s)>0) return s; }
+    return schools.filter(s=>s.hasProgram&&effectiveAvail(s)>0).sort((a,b)=>b.score-a.score)[0]||null;
+  };
+
+  const place = (famId,school) => {
+    setPlacements(p=>({...p,[famId]:{schoolId:school.id,schoolName:school.name}}));
+    setFamilies(f=>f.map(fam=>fam.id===famId?{...fam,status:"placed"}:fam));
+  };
+
+  const autoPlace = () => {
+    const np={...placements};
+    const nf=families.map(fam=>{
+      if(fam.status==="placed") return fam;
+      const s=suggest(fam);
+      if(s){np[fam.id]={schoolId:s.id,schoolName:s.name};return{...fam,status:"placed"};}
+      return fam;
+    });
+    setPlacements(np); setFamilies(nf);
+  };
+
+  const placed = families.filter(f=>f.status==="placed").length;
+  const openVac = vacancies.filter(v=>v.status==="open");
+
+  return (
+    <div style={{display:"flex",gap:20,flexWrap:"wrap"}}>
+      <div style={{flex:1,minWidth:300,display:"flex",flexDirection:"column",gap:16}}>
+        {openVac.length>0 && (
+          <div style={{background:"rgba(56,189,248,0.06)",border:"1px solid rgba(56,189,248,0.25)",borderRadius:12,padding:"14px 16px"}}>
+            <div style={{fontSize:13,fontWeight:700,color:"#38bdf8",marginBottom:8}}>⚡ {openVac.length} Open Vacanc{openVac.length>1?"ies":"y"} — Fill Now</div>
+            {openVac.map(v=>{ const s=getSchool(v.schoolId); if(!s) return null;
+              const nextFam=families.find(f=>f.status==="unplaced");
+              return (
+                <div key={v.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderBottom:"1px solid rgba(56,189,248,0.1)"}}>
+                  <div>
+                    <span style={{fontSize:12,fontWeight:600,color:"#f1f5f9"}}>{s.name.split(" ").slice(0,3).join(" ")}</span>
+                    <span style={{fontSize:11,color:"#64748b",marginLeft:8}}>{v.seats} seat{v.seats>1?"s":""} · {v.reason}</span>
+                  </div>
+                  <button onClick={()=>{onFill(v.id);if(nextFam)place(nextFam.id,s);}}
+                    style={{background:"rgba(34,197,94,0.15)",border:"1px solid rgba(34,197,94,0.3)",color:"#22c55e",padding:"5px 12px",borderRadius:6,fontSize:11,fontWeight:700,cursor:"pointer"}}>
+                    Fill →
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+          <div>
+            <div style={{fontSize:16,fontWeight:700,color:"#f1f5f9"}}>Waitlist Families</div>
+            <div style={{fontSize:12,color:"#64748b",marginTop:2}}>{placed} of {families.length} placed this cycle</div>
+          </div>
+          <button onClick={autoPlace} style={{background:"linear-gradient(135deg,#38bdf8,#818cf8)",border:"none",color:"#fff",padding:"10px 20px",borderRadius:8,fontSize:12,fontWeight:700,cursor:"pointer"}}>⚡ Auto-Optimize All</button>
+        </div>
+        <div style={{height:6,background:"rgba(255,255,255,0.06)",borderRadius:99}}>
+          <div style={{width:`${pct(placed,families.length)}%`,height:"100%",background:"linear-gradient(90deg,#38bdf8,#818cf8)",borderRadius:99,transition:"width 0.6s ease"}}/>
+        </div>
+        {families.map(fam=>{
+          const sugg=suggest(fam), isPlaced=fam.status==="placed", placement=placements[fam.id];
+          return (
+            <div key={fam.id} onClick={()=>setSelected(selected===fam.id?null:fam.id)}
+              style={{background:selected===fam.id?"rgba(56,189,248,0.06)":"rgba(255,255,255,0.03)",border:`1px solid ${selected===fam.id?"rgba(56,189,248,0.3)":"rgba(255,255,255,0.07)"}`,borderRadius:12,padding:"14px 16px",cursor:"pointer",transition:"all 0.2s"}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+                <div>
+                  <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
+                    <span style={{fontSize:13,fontWeight:600,color:"#f1f5f9"}}>{fam.child}</span>
+                    <Badge label={fam.priority} color={fam.priority==="high"?"#f97316":"#94a3b8"} bg={fam.priority==="high"?"rgba(249,115,22,0.1)":"rgba(148,163,184,0.1)"}/>
+                    {isPlaced && <Badge label="✓ Placed" color="#22c55e" bg="rgba(34,197,94,0.1)"/>}
+                  </div>
+                  <div style={{fontSize:11,color:"#64748b",marginTop:4}}>{fam.name} · {fam.distance}mi · Income: {fam.income}</div>
+                </div>
+                {!isPlaced&&sugg&&(
+                  <button onClick={e=>{e.stopPropagation();place(fam.id,sugg);}}
+                    style={{background:"rgba(34,197,94,0.15)",border:"1px solid rgba(34,197,94,0.3)",color:"#22c55e",padding:"6px 14px",borderRadius:7,fontSize:11,fontWeight:700,cursor:"pointer",marginLeft:8}}>
+                    Place →
+                  </button>
+                )}
+              </div>
+              {selected===fam.id && (
+                <div style={{marginTop:12,paddingTop:12,borderTop:"1px solid rgba(255,255,255,0.06)"}}>
+                  {isPlaced ? (
+                    <div style={{fontSize:12,color:"#22c55e"}}>✓ Assigned to: {placement?.schoolName}</div>
+                  ) : (
+                    <div>
+                      <div style={{fontSize:11,color:"#64748b",marginBottom:8}}>Preferred schools &amp; availability:</div>
+                      {fam.preferredSchools.map(sid=>{
+                        const s=getSchool(sid); if(!s) return null;
+                        const avail=effectiveAvail(s);
+                        return (
+                          <div key={sid} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"6px 0"}}>
+                            <span style={{fontSize:12,color:"#cbd5e1"}}>{s.name.split(" ").slice(0,4).join(" ")}</span>
+                            <div style={{display:"flex",gap:8,alignItems:"center"}}>
+                              <Badge label={avail>0?`${avail} open`:"Full"} color={avail>0?"#22c55e":"#ef4444"} bg={avail>0?"rgba(34,197,94,0.1)":"rgba(239,68,68,0.1)"}/>
+                              {avail>0&&<button onClick={e=>{e.stopPropagation();place(fam.id,s);}} style={{background:"rgba(56,189,248,0.15)",border:"none",color:"#38bdf8",padding:"4px 10px",borderRadius:5,fontSize:10,cursor:"pointer",fontWeight:700}}>Select</button>}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+      <div style={{width:240,flexShrink:0}}>
+        <div style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:14,padding:20,position:"sticky",top:80}}>
+          <div style={{fontSize:13,fontWeight:600,color:"#cbd5e1",marginBottom:16}}>Cycle Summary</div>
+          {[["Families in Queue",families.length,"#f1f5f9"],["High Priority",families.filter(f=>f.priority==="high").length,"#f97316"],["Placed",placed,"#22c55e"],["Pending",families.length-placed,"#94a3b8"],["Vacancy Seats Open",openVac.reduce((a,v)=>a+v.seats,0),"#38bdf8"]].map(([l,v,c])=>(
+            <div key={l} style={{display:"flex",justifyContent:"space-between",padding:"8px 0",borderBottom:"1px solid rgba(255,255,255,0.05)"}}>
+              <span style={{fontSize:12,color:"#64748b"}}>{l}</span>
+              <span style={{fontSize:14,fontWeight:700,color:c}}>{v}</span>
+            </div>
+          ))}
+          <div style={{marginTop:16,padding:12,background:"rgba(56,189,248,0.05)",borderRadius:8,border:"1px solid rgba(56,189,248,0.12)"}}>
+            <div style={{fontSize:11,color:"#38bdf8",fontWeight:600,marginBottom:6}}>Placement Rate</div>
+            <div style={{fontSize:28,fontFamily:"'DM Serif Display',serif",color:"#38bdf8"}}>{pct(placed,families.length)}%</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Expansion Tab ─────────────────────────────────────────────────────────────
+function ExpansionTab({schools}) {
+  const [filter,setFilter] = useState("ALL");
+  const list = filter==="ALL"?EXPANSION_CANDIDATES:EXPANSION_CANDIDATES.filter(c=>c.priority===filter);
+  return (
+    <div style={{display:"flex",flexDirection:"column",gap:20}}>
+      <div style={{display:"flex",gap:10,alignItems:"center",flexWrap:"wrap"}}>
+        <span style={{fontSize:13,color:"#94a3b8"}}>Filter:</span>
+        {["ALL","HIGH","MEDIUM","LOW"].map(f=>(
+          <button key={f} onClick={()=>setFilter(f)}
+            style={{padding:"6px 16px",borderRadius:7,border:`1px solid ${filter===f?(pColor[f]||"#38bdf8"):"rgba(255,255,255,0.1)"}`,background:filter===f?(pBg[f]||"rgba(56,189,248,0.1)"):"transparent",color:filter===f?(pColor[f]||"#38bdf8"):"#64748b",fontSize:11,fontWeight:700,cursor:"pointer"}}>
+            {f}
+          </button>
+        ))}
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(320px,1fr))",gap:16}}>
+        {list.map(c=>{
+          const s=schools.find(sc=>sc.id===c.id); if(!s) return null;
+          return (
+            <div key={c.id} style={{background:"rgba(255,255,255,0.03)",border:`1px solid ${pColor[c.priority]}33`,borderRadius:14,padding:20,position:"relative",overflow:"hidden"}}>
+              <div style={{position:"absolute",top:0,right:0,width:60,height:60,background:`radial-gradient(circle,${pColor[c.priority]}22,transparent)`,borderRadius:"0 14px 0 60px"}}/>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:12}}>
+                <div>
+                  <Badge label={c.priority+" PRIORITY"} color={pColor[c.priority]} bg={pBg[c.priority]}/>
+                  <div style={{fontSize:14,fontWeight:700,color:"#f1f5f9",marginTop:8}}>{s.name.split(" ").slice(0,4).join(" ")}</div>
+                  <div style={{fontSize:11,color:"#64748b",marginTop:2}}>{s.borough} · District {s.district}</div>
+                </div>
+                <div style={{textAlign:"right"}}>
+                  <div style={{fontSize:28,fontFamily:"'DM Serif Display',serif",color:pColor[c.priority]}}>{c.score}</div>
+                  <div style={{fontSize:10,color:"#64748b",letterSpacing:"0.06em"}}>EXP. SCORE</div>
+                </div>
+              </div>
+              <div style={{display:"flex",gap:8,marginBottom:12,flexWrap:"wrap"}}>
+                <Badge label={`${s.capacity-s.enrolled} seats avail.`} color="#22c55e" bg="rgba(34,197,94,0.1)"/>
+                <Badge label={s.income+" income"} color="#94a3b8"/>
+              </div>
+              {c.reasons.map((r,i)=>(
+                <div key={i} style={{display:"flex",gap:8,marginBottom:4}}>
+                  <span style={{color:pColor[c.priority],fontSize:12,marginTop:1}}>▸</span>
+                  <span style={{fontSize:12,color:"#94a3b8"}}>{r}</span>
+                </div>
+              ))}
+              <button style={{marginTop:16,width:"100%",background:`${pColor[c.priority]}22`,border:`1px solid ${pColor[c.priority]}44`,color:pColor[c.priority],padding:"9px 0",borderRadius:8,fontSize:11,fontWeight:700,cursor:"pointer",letterSpacing:"0.05em"}}>
+                INITIATE EXPANSION REVIEW →
+              </button>
+            </div>
+          );
+        })}
+      </div>
+      <div style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:14,padding:20}}>
+        <div style={{fontSize:13,fontWeight:600,color:"#cbd5e1",marginBottom:16}}>Expansion Impact Projection</div>
+        <div style={{display:"flex",gap:24,flexWrap:"wrap"}}>
+          {[["New seats if all HIGH expanded","+180","#ef4444"],["Families served from waitlist","~127","#f97316"],["Projected utilization post-expansion","84%","#22c55e"],["Estimated implementation timeline","6 months","#38bdf8"]].map(([l,v,c])=>(
+            <div key={l} style={{flex:1,minWidth:160}}>
+              <div style={{fontSize:24,fontFamily:"'DM Serif Display',serif",color:c}}>{v}</div>
+              <div style={{fontSize:11,color:"#64748b",marginTop:4}}>{l}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Capacity Tab ──────────────────────────────────────────────────────────────
+function CapacityTab({schools,vacancies}) {
+  const [bFilter,setBFilter] = useState("All");
+  const [sort,setSort]       = useState("utilization");
+  const [search,setSearch]   = useState("");
+  const vacFor = id => vacancies.filter(v=>v.schoolId===id&&v.status==="open").reduce((a,v)=>a+v.seats,0);
+  const rows = schools
+    .filter(s=>bFilter==="All"||s.borough===bFilter)
+    .filter(s=>s.name.toLowerCase().includes(search.toLowerCase()))
+    .sort((a,b)=>{
+      if(sort==="utilization") return pct(b.enrolled,b.capacity)-pct(a.enrolled,a.capacity);
+      if(sort==="waitlist")    return b.waitlist-a.waitlist;
+      if(sort==="available")   return (b.capacity-b.enrolled)-(a.capacity-a.enrolled);
+      return a.name.localeCompare(b.name);
+    });
+  return (
+    <div style={{display:"flex",flexDirection:"column",gap:16}}>
+      <div style={{display:"flex",gap:10,flexWrap:"wrap",alignItems:"center"}}>
+        <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search schools…"
+          style={{flex:1,minWidth:160,background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:8,padding:"8px 14px",color:"#f1f5f9",fontSize:12,outline:"none"}}/>
+        <select value={bFilter} onChange={e=>setBFilter(e.target.value)}
+          style={{background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:8,padding:"8px 12px",color:"#f1f5f9",fontSize:12,cursor:"pointer"}}>
+          <option value="All">All Boroughs</option>
+          {BOROUGHS.map(b=><option key={b} value={b}>{b}</option>)}
+        </select>
+        <select value={sort} onChange={e=>setSort(e.target.value)}
+          style={{background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:8,padding:"8px 12px",color:"#f1f5f9",fontSize:12,cursor:"pointer"}}>
+          <option value="utilization">Sort: Utilization</option>
+          <option value="waitlist">Sort: Waitlist</option>
+          <option value="available">Sort: Available</option>
+          <option value="name">Sort: Name</option>
+        </select>
+      </div>
+      <div style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:14,overflow:"hidden"}}>
+        <div style={{overflowX:"auto"}}>
+          <table style={{width:"100%",borderCollapse:"collapse",minWidth:700}}>
+            <thead>
+              <tr style={{background:"rgba(255,255,255,0.03)"}}>
+                {["School","Borough","Program","Type","Cap.","Enrolled","Live Vac.","Waitlist","Utilization"].map(h=>(
+                  <th key={h} style={{padding:"11px 14px",textAlign:"left",fontSize:10,letterSpacing:"0.08em",textTransform:"uppercase",color:"#475569",fontWeight:600,whiteSpace:"nowrap"}}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((s,i)=>{
+                const u=pct(s.enrolled,s.capacity), vs=vacFor(s.id);
+                return (
+                  <tr key={s.id} style={{borderTop:"1px solid rgba(255,255,255,0.04)",background:i%2===0?"transparent":"rgba(255,255,255,0.01)"}}>
+                    <td style={{padding:"11px 14px",fontSize:12,color:"#e2e8f0",fontWeight:500,maxWidth:200}}>
+                      <div style={{whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{s.name}</div>
+                    </td>
+                    <td style={{padding:"11px 14px",fontSize:11,color:"#64748b",whiteSpace:"nowrap"}}>{s.borough}</td>
+                    <td style={{padding:"11px 14px"}}>
+                      {s.hasProgram?<Badge label="Active" color="#22c55e" bg="rgba(34,197,94,0.1)"/>:<Badge label="None" color="#64748b" bg="rgba(100,116,139,0.1)"/>}
+                    </td>
+                    <td style={{padding:"11px 14px",fontSize:11,color:"#64748b"}}>{s.programType||"—"}</td>
+                    <td style={{padding:"11px 14px",fontSize:13,color:"#94a3b8",textAlign:"center"}}>{s.capacity}</td>
+                    <td style={{padding:"11px 14px",fontSize:13,color:"#f1f5f9",fontWeight:600,textAlign:"center"}}>{s.enrolled}</td>
+                    <td style={{padding:"11px 14px",textAlign:"center"}}>
+                      {vs>0
+                        ?<span style={{fontSize:13,color:"#38bdf8",fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",gap:4}}><span className="pulse-dot" style={{width:6,height:6,borderRadius:"50%",background:"#38bdf8",display:"inline-block"}}/>{vs}</span>
+                        :<span style={{fontSize:12,color:"#334155"}}>—</span>}
+                    </td>
+                    <td style={{padding:"11px 14px",textAlign:"center"}}>
+                      <span style={{fontSize:13,color:s.waitlist>0?"#f97316":"#475569",fontWeight:s.waitlist>0?700:400}}>{s.waitlist}</span>
+                    </td>
+                    <td style={{padding:"11px 14px",minWidth:120}}><UtilBar value={u}/></td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+        <div style={{padding:"10px 16px",borderTop:"1px solid rgba(255,255,255,0.05)",fontSize:11,color:"#475569"}}>Showing {rows.length} of {schools.length} schools</div>
+      </div>
+    </div>
+  );
+}
+
+// ── Demand Analytics Tab ──────────────────────────────────────────────────────
+function DemandTab({schools}) {
+  const totalWl = schools.reduce((a,s)=>a+s.waitlist,0);
+  const highD   = schools.filter(s=>s.waitlist>15);
+  const byB = BOROUGHS.map(b=>{
+    const bs=schools.filter(s=>s.borough===b);
+    const wl=bs.reduce((a,s)=>a+s.waitlist,0);
+    const gap=bs.reduce((a,s)=>a+Math.max(0,s.capacity-s.enrolled),0);
+    return{borough:b,waitlist:wl,gap,net:wl-gap};
+  });
+  const maxWl = Math.max(...byB.map(b=>b.waitlist));
+  return (
+    <div style={{display:"flex",flexDirection:"column",gap:20}}>
+      <div style={{display:"flex",gap:16,flexWrap:"wrap"}}>
+        <StatCard label="Total Waitlisted"    value={totalWl}        sub="Seeking 3K placement"  accent="#f97316"/>
+        <StatCard label="High-Demand Schools" value={highD.length}   sub="15+ on waitlist"        accent="#ef4444"/>
+        <StatCard label="Unmet Demand Gap"    value={`${Math.max(0,totalWl-schools.reduce((a,s)=>a+Math.max(0,s.capacity-s.enrolled),0))} seats`} sub="Estimated shortfall" accent="#a78bfa"/>
+        <StatCard label="Demand Coverage"     value={`${pct(schools.filter(s=>s.hasProgram).length,schools.length)}%`} sub="Schools with programs" accent="#22c55e"/>
+      </div>
+      <div style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:14,padding:20}}>
+        <div style={{fontSize:13,fontWeight:600,color:"#cbd5e1",marginBottom:20}}>Waitlist Demand by Borough</div>
+        {byB.sort((a,b)=>b.waitlist-a.waitlist).map(b=>(
+          <div key={b.borough} style={{marginBottom:14}}>
+            <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
+              <span style={{fontSize:13,fontWeight:600,color:"#e2e8f0"}}>{b.borough}</span>
+              <div style={{display:"flex",gap:12}}>
+                <span style={{fontSize:11,color:"#64748b"}}>{b.gap} available</span>
+                <span style={{fontSize:13,color:b.waitlist>0?"#f97316":"#64748b",fontWeight:700}}>{b.waitlist} waiting</span>
+              </div>
+            </div>
+            <div style={{height:10,background:"rgba(255,255,255,0.05)",borderRadius:99,overflow:"hidden"}}>
+              <div style={{height:"100%",width:`${(b.waitlist/maxWl)*100}%`,background:b.net>10?"linear-gradient(90deg,#ef4444,#f97316)":b.net>0?"linear-gradient(90deg,#f97316,#fbbf24)":"linear-gradient(90deg,#22c55e,#38bdf8)",borderRadius:99,transition:"width 0.8s ease"}}/>
+            </div>
+            {b.net>0&&<div style={{fontSize:11,color:"#f97316",marginTop:4}}>⚠ {b.net} families exceed available seats — expansion needed</div>}
+          </div>
+        ))}
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:16}}>
+        <div style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:14,padding:20}}>
+          <div style={{fontSize:13,fontWeight:600,color:"#cbd5e1",marginBottom:16}}>Top Demand Schools</div>
+          {schools.filter(s=>s.waitlist>0).sort((a,b)=>b.waitlist-a.waitlist).slice(0,8).map((s,i)=>(
+            <div key={s.id} style={{display:"flex",alignItems:"center",gap:12,padding:"7px 0",borderBottom:"1px solid rgba(255,255,255,0.04)"}}>
+              <span style={{fontSize:11,color:"#475569",minWidth:16}}>{i+1}</span>
+              <div style={{flex:1}}>
+                <div style={{fontSize:12,color:"#e2e8f0",fontWeight:500}}>{s.name.split(" ").slice(0,3).join(" ")}</div>
+                <div style={{fontSize:10,color:"#475569"}}>{s.borough}</div>
+              </div>
+              <div style={{textAlign:"right"}}>
+                <div style={{fontSize:14,fontWeight:700,color:"#f97316"}}>{s.waitlist}</div>
+                <div style={{fontSize:9,color:"#475569",letterSpacing:"0.05em"}}>WAITING</div>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.07)",borderRadius:14,padding:20}}>
+          <div style={{fontSize:13,fontWeight:600,color:"#cbd5e1",marginBottom:16}}>Income Equity Analysis</div>
+          {["low","mixed"].map(inc=>{
+            const is=schools.filter(s=>s.income===inc);
+            const iw=is.reduce((a,s)=>a+s.waitlist,0);
+            const ip=is.filter(s=>s.hasProgram).length;
+            const iu=Math.round(is.reduce((a,s)=>a+pct(s.enrolled,s.capacity),0)/is.length);
+            return (
+              <div key={inc} style={{marginBottom:20}}>
+                <div style={{display:"flex",justifyContent:"space-between",marginBottom:8}}>
+                  <Badge label={inc==="low"?"Low-Income Areas":"Mixed-Income Areas"} color={inc==="low"?"#a78bfa":"#38bdf8"} bg={inc==="low"?"rgba(167,139,250,0.1)":"rgba(56,189,248,0.1)"}/>
+                  <span style={{fontSize:11,color:"#64748b"}}>{is.length} schools</span>
+                </div>
+                {[["Programs active",ip,is.length],["Avg. utilization",iu,100,"%"],["Total waitlist",iw,null]].map(([l,v,t,u])=>(
+                  <div key={l} style={{display:"flex",justifyContent:"space-between",padding:"5px 0",borderBottom:"1px solid rgba(255,255,255,0.04)"}}>
+                    <span style={{fontSize:11,color:"#64748b"}}>{l}</span>
+                    <span style={{fontSize:12,fontWeight:600,color:"#f1f5f9"}}>{v}{u||""}{t?` / ${t}`:""}</span>
+                  </div>
+                ))}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── App ───────────────────────────────────────────────────────────────────────
+const TABS = [
+  {id:"dashboard",   label:"Overview",         icon:"◈"},
+  {id:"vacancies",   label:"Vacancy Feed",      icon:"⚡"},
+  {id:"reassign",    label:"Seat Reassignment", icon:"⟳"},
+  {id:"expansion",   label:"Expansion Planner", icon:"⊕"},
+  {id:"capacity",    label:"School Capacity",   icon:"▦"},
+  {id:"demand",      label:"Demand Analytics",  icon:"◎"},
+];
+
+function App() {
+  const [tab,          setTab]         = useState("dashboard");
+  const [vacancies,    setVacancies]   = useState([]);
+  const [liveEnabled,  setLiveEnabled] = useState(true);
+  const [showModal,    setShowModal]   = useState(false);
+  const [bellPulse,    setBellPulse]   = useState(false);
+  const timerRef = useRef(null);
+  const schools  = INITIAL_SCHOOLS;
+
+  const openCount = vacancies.filter(v=>v.status==="open").length;
+
+  useEffect(()=>{
+    if(!liveEnabled){clearInterval(timerRef.current);return;}
+    timerRef.current = setInterval(()=>{
+      const active = INITIAL_SCHOOLS.filter(s=>s.hasProgram&&s.enrolled>0);
+      const s      = active[Math.floor(Math.random()*active.length)];
+      const v = {id:++vacId,schoolId:s.id,seats:Math.random()<0.7?1:2,reason:VACANCY_REASONS[Math.floor(Math.random()*VACANCY_REASONS.length)],source:"auto",status:"open",time:nowTs()};
+      setVacancies(p=>[v,...p.slice(0,29)]);
+      setBellPulse(true); setTimeout(()=>setBellPulse(false),900);
+    },12000);
+    return ()=>clearInterval(timerRef.current);
+  },[liveEnabled]);
+
+  const addManual = ({schoolId,seats,reason}) => {
+    const v={id:++vacId,schoolId,seats,reason,source:"manual",status:"open",time:nowTs()};
+    setVacancies(p=>[v,...p]);
+    setBellPulse(true); setTimeout(()=>setBellPulse(false),900);
+  };
+  const dismiss = id => setVacancies(p=>p.filter(v=>v.id!==id));
+  const fill    = id => setVacancies(p=>p.map(v=>v.id===id?{...v,status:"filled",time:nowTs()}:v));
+
+  return (
+    <div style={{minHeight:"100vh",background:"#080c14",color:"#f1f5f9",fontFamily:"'DM Sans',sans-serif"}}>
+
+      {/* Header */}
+      <div style={{borderBottom:"1px solid rgba(255,255,255,0.06)",background:"rgba(8,12,20,0.97)",backdropFilter:"blur(20px)",position:"sticky",top:0,zIndex:100}}>
+        <div style={{maxWidth:1280,margin:"0 auto",padding:"0 20px",display:"flex",alignItems:"center",justifyContent:"space-between",height:62}}>
+          <div style={{display:"flex",alignItems:"center",gap:12}}>
+            <div style={{width:32,height:32,borderRadius:8,background:"linear-gradient(135deg,#38bdf8,#818cf8)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,fontWeight:900,color:"#fff",flexShrink:0}}>3</div>
+            <div>
+              <div style={{fontSize:15,fontWeight:700,color:"#f1f5f9",letterSpacing:"-0.02em"}}>NYC 3K Optimizer</div>
+              <div style={{fontSize:10,color:"#475569",letterSpacing:"0.08em",textTransform:"uppercase"}}>Seat Management &amp; Expansion Platform</div>
+            </div>
+          </div>
+          <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap",justifyContent:"flex-end"}}>
+            {/* Bell */}
+            <button onClick={()=>setTab("vacancies")} className={bellPulse?"bell-ring":""} style={{position:"relative",background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:8,padding:"6px 12px",cursor:"pointer",display:"flex",alignItems:"center",gap:6,color:"#94a3b8",fontSize:13}}>
+              🔔 <span style={{fontSize:11}}>Vacancies</span>
+              {openCount>0&&<span style={{position:"absolute",top:-5,right:-5,background:"#ef4444",color:"#fff",borderRadius:99,fontSize:10,fontWeight:800,minWidth:18,height:18,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 4px",boxShadow:"0 0 8px rgba(239,68,68,0.6)"}}>{openCount}</span>}
+            </button>
+            <button onClick={()=>setShowModal(true)} style={{background:"rgba(167,139,250,0.12)",border:"1px solid rgba(167,139,250,0.3)",borderRadius:8,padding:"6px 14px",cursor:"pointer",color:"#a78bfa",fontSize:11,fontWeight:700}}>+ Log Vacancy</button>
+            <div style={{display:"flex",alignItems:"center",gap:6}}>
+              <div className={liveEnabled?"pulse-dot":""} style={{width:8,height:8,borderRadius:"50%",background:liveEnabled?"#22c55e":"#475569",boxShadow:liveEnabled?"0 0 8px #22c55e":"none"}}/>
+              <span style={{fontSize:11,color:"#64748b"}}>Live · SY 2025–26</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Nav */}
+      <div style={{borderBottom:"1px solid rgba(255,255,255,0.05)",background:"rgba(8,12,20,0.7)",overflowX:"auto"}}>
+        <div style={{maxWidth:1280,margin:"0 auto",padding:"0 20px",display:"flex",gap:2,minWidth:"max-content"}}>
+          {TABS.map(t=>(
+            <button key={t.id} onClick={()=>setTab(t.id)}
+              style={{padding:"14px 16px",background:"transparent",border:"none",borderBottom:`2px solid ${tab===t.id?"#38bdf8":"transparent"}`,color:tab===t.id?"#38bdf8":"#475569",fontSize:12,fontWeight:tab===t.id?700:500,cursor:"pointer",display:"flex",alignItems:"center",gap:6,transition:"all 0.2s",letterSpacing:"0.02em",whiteSpace:"nowrap",position:"relative"}}>
+              <span style={{fontSize:14}}>{t.icon}</span>{t.label}
+              {t.id==="vacancies"&&openCount>0&&<span style={{background:"#ef4444",color:"#fff",borderRadius:99,fontSize:9,fontWeight:800,padding:"1px 5px",marginLeft:2}}>{openCount}</span>}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Content */}
+      <div style={{maxWidth:1280,margin:"0 auto",padding:"28px 20px"}} className="tab-content">
+        {tab==="dashboard" && <DashboardTab    schools={schools} vacancies={vacancies}/>}
+        {tab==="vacancies" && <VacancyTab      schools={schools} vacancies={vacancies} onDismiss={dismiss} onFill={fill} liveEnabled={liveEnabled} setLiveEnabled={setLiveEnabled}/>}
+        {tab==="reassign"  && <ReassignmentTab schools={schools} vacancies={vacancies} onFill={fill}/>}
+        {tab==="expansion" && <ExpansionTab    schools={schools}/>}
+        {tab==="capacity"  && <CapacityTab     schools={schools} vacancies={vacancies}/>}
+        {tab==="demand"    && <DemandTab       schools={schools}/>}
+      </div>
+
+      {showModal && <ManualVacancyModal schools={schools} onSubmit={addManual} onClose={()=>setShowModal(false)}/>}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
