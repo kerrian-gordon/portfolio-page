@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Kilometers ⇄ Miles Converter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #080c14;
+    --surface: #0d1421;
+    --surface2: rgba(255,255,255,0.03);
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.14);
+    --ink: #05070c;
+    --text: #f1f5f9;
+    --muted: #64748b;
+    --muted2: #94a3b8;
+    --cyan: #38bdf8;
+    --indigo: #818cf8;
+    --violet: #a78bfa;
+    --grad: linear-gradient(135deg, var(--cyan), var(--indigo));
+  }
+
+  *{ box-sizing: border-box; }
+
+  body{
+    margin:0;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:
+      radial-gradient(ellipse at 30% 0%, rgba(56,189,248,0.1) 0%, transparent 60%),
+      radial-gradient(ellipse at 90% 100%, rgba(129,140,248,0.08) 0%, transparent 60%),
+      var(--bg);
+    font-family:'DM Sans', sans-serif;
+    color: var(--text);
+    padding: 32px 16px;
+  }
+
+  .frame{
+    width: 100%;
+    max-width: 620px;
+  }
+
+  header{
+    padding: 0 6px 18px 6px;
+  }
+
+  .eyebrow{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    font-family:'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--cyan);
+    margin-bottom: 16px;
+  }
+
+  .eyebrow::before{
+    content:'';
+    width: 24px;
+    height: 1px;
+    background: var(--cyan);
+  }
+
+  h1{
+    margin:0;
+    font-family:'DM Serif Display', serif;
+    font-weight: 400;
+    font-size: clamp(34px, 7vw, 48px);
+    letter-spacing: -0.01em;
+    line-height: 1.05;
+    color: var(--text);
+  }
+
+  h1 .arrows{
+    color: var(--cyan);
+    padding: 0 6px;
+  }
+
+  .rule-body{
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px 26px 20px 26px;
+    box-shadow: 0 18px 40px rgba(0,0,0,0.35);
+  }
+
+  .controls{
+    display:flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    margin-bottom: 22px;
+  }
+
+  .field{
+    flex: 1 1 180px;
+  }
+
+  label{
+    display:block;
+    font-family:'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  input#value{
+    width: 100%;
+    font-family:'DM Mono', monospace;
+    font-size: 26px;
+    font-weight: 500;
+    color: var(--text);
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 10px 12px;
+  }
+
+  input#value:focus{
+    outline: 2px solid var(--cyan);
+    outline-offset: 1px;
+  }
+
+  input#value::-webkit-outer-spin-button,
+  input#value::-webkit-inner-spin-button{
+    opacity: 0.6;
+  }
+
+  .direction-toggle{
+    display:flex;
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    overflow:hidden;
+    flex: 0 0 auto;
+  }
+
+  .dir-btn{
+    font-family:'DM Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    padding: 12px 14px;
+    background: rgba(255,255,255,0.04);
+    color: var(--muted2);
+    border: none;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+
+  .dir-btn:not(:last-child){
+    border-right: 1px solid var(--border);
+  }
+
+  .dir-btn.active{
+    background: var(--grad);
+    color: #fff;
+  }
+
+  .dir-btn:focus-visible{
+    outline: 2px solid var(--cyan);
+    outline-offset: -2px;
+  }
+
+  .readout{
+    margin-bottom: 22px;
+  }
+
+  .readout-label{
+    font-family:'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .readout-window{
+    display:flex;
+    align-items: baseline;
+    gap: 8px;
+    flex-wrap: wrap;
+    background: var(--ink);
+    border-radius: 8px;
+    padding: 16px 18px;
+    box-shadow: inset 0 0 0 2px rgba(56,189,248,0.2);
+  }
+
+  .readout-window #inputEcho,
+  .readout-window #result{
+    font-family:'DM Mono', monospace;
+    font-weight: 500;
+    font-size: clamp(22px, 5vw, 30px);
+    color: var(--text);
+  }
+
+  .readout-window #result{
+    color: var(--cyan);
+  }
+
+  .unit-echo{
+    font-family:'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--indigo);
+    align-self: center;
+  }
+
+  .equals{
+    font-family:'DM Mono', monospace;
+    color: var(--muted);
+    font-size: 18px;
+    padding: 0 2px;
+  }
+
+  .scale{
+    position: relative;
+    height: 76px;
+    margin: 10px 4px 6px 4px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+  }
+
+  .scale-track{
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 34px;
+  }
+
+  .km-track{ top: 4px; }
+  .mi-track{ bottom: 4px; }
+
+  .tick{
+    position: absolute;
+    bottom: 0;
+    width: 1px;
+    background: var(--muted2);
+    opacity: 0.45;
+  }
+
+  .mi-track .tick{
+    bottom: auto;
+    top: 0;
+  }
+
+  .tick.major{ opacity: 0.9; }
+
+  .tick-label{
+    position: absolute;
+    bottom: 100%;
+    transform: translateX(-50%);
+    font-family:'DM Mono', monospace;
+    font-size: 9px;
+    color: var(--muted);
+    margin-bottom: 2px;
+    white-space: nowrap;
+  }
+
+  .mi-track .tick-label{
+    bottom: auto;
+    top: 100%;
+    margin-bottom: 0;
+    margin-top: 2px;
+  }
+
+  .cursor{
+    position: absolute;
+    top: -6px;
+    bottom: -6px;
+    width: 2px;
+    background: var(--cyan);
+    left: 0%;
+    transition: left 0.25s ease;
+    box-shadow: 0 0 0 1px rgba(56,189,248,0.25);
+  }
+
+  .cursor::before{
+    content:'';
+    position: absolute;
+    top: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 6px solid var(--cyan);
+  }
+
+  .cursor.offscale{
+    opacity: 0.25;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .cursor{ transition: none; }
+  }
+
+  .scale-caption{
+    display:flex;
+    justify-content: space-between;
+    font-family:'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    padding: 0 4px;
+    margin-bottom: 4px;
+  }
+
+  footer{
+    display:flex;
+    gap: 10px;
+    justify-content:center;
+    flex-wrap: wrap;
+    font-family:'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    padding-top: 18px;
+  }
+
+  footer .dot{ color: var(--cyan); }
+
+  @media (max-width: 420px){
+    .rule-body{ padding: 20px 16px 16px 16px; }
+    .scale{ height: 64px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="frame">
+  <header>
+    <span class="eyebrow">No. 0161 · DISTANCE CONVERSION</span>
+    <h1>Kilometers <span class="arrows">⇄</span> Miles</h1>
+  </header>
+
+  <main class="rule-body">
+    <div class="controls">
+      <div class="field">
+        <label for="value" id="inputLabel">Enter kilometers</label>
+        <input type="number" id="value" inputmode="decimal" value="1" step="any" />
+      </div>
+      <div class="direction-toggle" role="group" aria-label="Conversion direction">
+        <button type="button" class="dir-btn active" data-dir="km-mi">KM → MI</button>
+        <button type="button" class="dir-btn" data-dir="mi-km">MI → KM</button>
+      </div>
+    </div>
+
+    <div class="readout">
+      <div class="readout-label" id="readoutLabel">kilometers → miles</div>
+      <div class="readout-window">
+        <span id="inputEcho">1</span>
+        <span class="unit-echo" id="unitFrom">km</span>
+        <span class="equals">=</span>
+        <span id="result">0.62137</span>
+        <span class="unit-echo" id="unitTo">mi</span>
+      </div>
+    </div>
+
+    <div class="scale" id="scale">
+      <div class="scale-track km-track" id="kmTrack"></div>
+      <div class="scale-track mi-track" id="miTrack"></div>
+      <div class="cursor" id="cursor"></div>
+    </div>
+    <div class="scale-caption">
+      <span>0</span>
+      <span>scale shown: 0–100 km against 0–62.1 mi</span>
+      <span>100</span>
+    </div>
+  </main>
+
+  <footer>
+    <span>1 km = 0.62137 mi</span>
+    <span class="dot">·</span>
+    <span>1 mi = 1.60934 km</span>
+  </footer>
+</div>
+
+<script>
+  const KM_PER_MI = 1.609344;
+  const MI_PER_KM = 1 / KM_PER_MI;
+  const SCALE_MAX_KM = 100;
+
+  const valueInput = document.getElementById('value');
+  const dirBtns = document.querySelectorAll('.dir-btn');
+  const inputLabel = document.getElementById('inputLabel');
+  const readoutLabel = document.getElementById('readoutLabel');
+  const inputEcho = document.getElementById('inputEcho');
+  const unitFrom = document.getElementById('unitFrom');
+  const unitTo = document.getElementById('unitTo');
+  const resultEl = document.getElementById('result');
+  const cursor = document.getElementById('cursor');
+  const kmTrack = document.getElementById('kmTrack');
+  const miTrack = document.getElementById('miTrack');
+
+  let direction = 'km-mi';
+
+  function formatNum(n){
+    if (!isFinite(n)) return '0';
+    let s = n.toFixed(5).replace(/0+$/,'').replace(/\.$/,'');
+    return s === '' || s === '-' ? '0' : s;
+  }
+
+  function buildTicks(){
+    kmTrack.innerHTML = '';
+    miTrack.innerHTML = '';
+
+    for (let km = 0; km <= SCALE_MAX_KM; km += 2){
+      const pct = (km / SCALE_MAX_KM) * 100;
+      const major = km % 10 === 0;
+      const t = document.createElement('div');
+      t.className = 'tick' + (major ? ' major' : '');
+      t.style.left = pct + '%';
+      t.style.height = major ? '100%' : '55%';
+      kmTrack.appendChild(t);
+      if (major){
+        const l = document.createElement('div');
+        l.className = 'tick-label';
+        l.style.left = pct + '%';
+        l.textContent = km;
+        kmTrack.appendChild(l);
+      }
+    }
+
+    const maxMi = SCALE_MAX_KM * MI_PER_KM;
+    for (let mi = 0; mi <= Math.floor(maxMi) + 2; mi += 2){
+      const km = mi * KM_PER_MI;
+      if (km > SCALE_MAX_KM) break;
+      const pct = (km / SCALE_MAX_KM) * 100;
+      const major = mi % 10 === 0;
+      const t = document.createElement('div');
+      t.className = 'tick' + (major ? ' major' : '');
+      t.style.left = pct + '%';
+      t.style.height = major ? '100%' : '55%';
+      miTrack.appendChild(t);
+      if (major){
+        const l = document.createElement('div');
+        l.className = 'tick-label';
+        l.style.left = pct + '%';
+        l.textContent = mi;
+        miTrack.appendChild(l);
+      }
+    }
+  }
+
+  function update(){
+    const raw = parseFloat(valueInput.value);
+    const val = isFinite(raw) ? raw : 0;
+
+    let kmVal, miVal, result;
+    if (direction === 'km-mi'){
+      kmVal = val;
+      miVal = val * MI_PER_KM;
+      result = miVal;
+      inputLabel.textContent = 'Enter kilometers';
+      readoutLabel.textContent = 'kilometers → miles';
+      unitFrom.textContent = 'km';
+      unitTo.textContent = 'mi';
+    } else {
+      miVal = val;
+      kmVal = val * KM_PER_MI;
+      result = kmVal;
+      inputLabel.textContent = 'Enter miles';
+      readoutLabel.textContent = 'miles → kilometers';
+      unitFrom.textContent = 'mi';
+      unitTo.textContent = 'km';
+    }
+
+    inputEcho.textContent = formatNum(val);
+    resultEl.textContent = formatNum(result);
+
+    const pct = (kmVal / SCALE_MAX_KM) * 100;
+    const clamped = Math.max(0, Math.min(100, pct));
+    cursor.style.left = clamped + '%';
+    cursor.classList.toggle('offscale', pct < 0 || pct > 100);
+  }
+
+  dirBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      dirBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      direction = btn.dataset.dir;
+      update();
+    });
+  });
+
+  valueInput.addEventListener('input', update);
+
+  buildTicks();
+  update();
+</script>
+
+</body>
+</html>

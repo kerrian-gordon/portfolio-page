@@ -464,11 +464,11 @@ footer{
     <h2 class="section-title">Built with AI.<br/>Solving real problems.</h2>
 
     <div class="project-card">
-      <div class="project-preview" onclick="openPreview()">
+      <div class="project-preview" onclick="openPreview('projects/nyc-3k-optimizer.html','NYC 3K Optimizer')">
         <iframe src="projects/nyc-3k-optimizer.html" title="NYC 3K Optimizer preview" tabindex="-1" aria-hidden="true"></iframe>
         <div class="project-overlay">
-          <button class="btn-preview" onclick="event.stopPropagation();openPreview()">⚡ Live Preview</button>
-          <button class="btn-code" onclick="event.stopPropagation();openCode()">{ } View Code</button>
+          <button class="btn-preview" onclick="event.stopPropagation();openPreview('projects/nyc-3k-optimizer.html','NYC 3K Optimizer')">⚡ Live Preview</button>
+          <button class="btn-code" onclick="event.stopPropagation();openCode('projects/nyc-3k-optimizer.html')">{ } View Code</button>
         </div>
       </div>
       <div class="project-meta">
@@ -480,6 +480,27 @@ footer{
           <span class="tag violet">Seat Optimization</span>
           <span class="tag green">Equity Analytics</span>
           <span class="tag">NYC DOE</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="project-card" style="margin-top:28px;">
+      <div class="project-preview" onclick="openPreview('projects/km-mi-converter.html','Kilometers ⇄ Miles Converter')">
+        <iframe src="projects/km-mi-converter.html" title="Kilometers ⇄ Miles Converter preview" tabindex="-1" aria-hidden="true"></iframe>
+        <div class="project-overlay">
+          <button class="btn-preview" onclick="event.stopPropagation();openPreview('projects/km-mi-converter.html','Kilometers ⇄ Miles Converter')">⚡ Live Preview</button>
+          <button class="btn-code" onclick="event.stopPropagation();openCode('projects/km-mi-converter.html')">{ } View Code</button>
+        </div>
+      </div>
+      <div class="project-meta">
+        <div class="project-title">Kilometers ⇄ Miles Converter</div>
+        <p class="project-caption">A precision distance-conversion tool with a tactile, drafting-ruler aesthetic — live bidirectional km/mi conversion with an animated dual-scale readout and cursor marker.</p>
+        <div class="project-tags">
+          <span class="tag">Vanilla JS</span>
+          <span class="tag indigo">Real-Time Conversion</span>
+          <span class="tag violet">Precision UI</span>
+          <span class="tag green">Accessible Design</span>
+          <span class="tag">Unit Conversion</span>
         </div>
       </div>
     </div>
@@ -661,10 +682,10 @@ footer{
 <div class="modal-backdrop" id="previewModal" onclick="closePreview()">
   <div class="modal-frame" onclick="event.stopPropagation()">
     <div class="modal-bar">
-      <span class="modal-title">⚡ NYC 3K Optimizer — Live Preview · SY 2025–26</span>
+      <span class="modal-title" id="previewTitle">⚡ Live Preview</span>
       <button class="modal-close" onclick="closePreview()">✕</button>
     </div>
-    <iframe id="previewFrame" src="" title="NYC 3K Optimizer"></iframe>
+    <iframe id="previewFrame" src="" title="Project preview"></iframe>
   </div>
 </div>
 
@@ -672,7 +693,7 @@ footer{
 <div class="modal-backdrop" id="codeModal" onclick="closeCode()">
   <div class="code-modal-frame" onclick="event.stopPropagation()">
     <div class="modal-bar">
-      <span class="modal-title">{ } nyc-3k-optimizer.html — Source</span>
+      <span class="modal-title" id="codeTitle">{ } Source</span>
       <button class="modal-close" onclick="closeCode()">✕</button>
     </div>
     <div class="code-body">
@@ -683,10 +704,11 @@ footer{
 
 <script>
 // ── Preview modal ─────────────────────────────────────────────────────────────
-function openPreview(){
+function openPreview(src, title){
   const modal=document.getElementById('previewModal');
   const frame=document.getElementById('previewFrame');
-  frame.src='projects/nyc-3k-optimizer.html';
+  document.getElementById('previewTitle').textContent='⚡ '+title+' — Live Preview';
+  frame.src=src;
   modal.classList.add('open');
   document.body.style.overflow='hidden';
 }
@@ -697,19 +719,24 @@ function closePreview(){
 }
 
 // ── Code modal ────────────────────────────────────────────────────────────────
-let codeLoaded=false;
-async function openCode(){
+const codeCache={};
+async function openCode(src){
   const modal=document.getElementById('codeModal');
+  const fileName=src.split('/').pop();
+  document.getElementById('codeTitle').textContent='{ } '+fileName+' — Source';
+  document.getElementById('codeBlock').textContent=codeCache[src] || 'Loading source…';
   modal.classList.add('open');
   document.body.style.overflow='hidden';
-  if(!codeLoaded){
+  if(!codeCache[src]){
     try{
-      const res=await fetch('projects/nyc-3k-optimizer.html');
+      const res=await fetch(src);
       const text=await res.text();
+      codeCache[src]=text;
       document.getElementById('codeBlock').textContent=text;
-      codeLoaded=true;
     }catch(e){
-      document.getElementById('codeBlock').textContent='// Open projects/nyc-3k-optimizer.html in the same folder to view the source.';
+      const msg='// Open '+src+' in the same folder to view the source.';
+      codeCache[src]=msg;
+      document.getElementById('codeBlock').textContent=msg;
     }
   }
 }
